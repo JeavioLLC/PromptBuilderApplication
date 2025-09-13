@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { UserPlus, Mail, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { UserPlus, Mail, Lock, Eye, EyeOff, CheckCircle, ArrowRight, Shield } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import Button from '../components/ui/Button'
-import Card from '../components/ui/Card'
 
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -63,32 +62,69 @@ const SignupPage: React.FC = () => {
   const passwordStrength = getPasswordStrength()
 
   return (
-    <div className="h-screen flex items-center justify-center bg-secondary px-4">
-      <Card className="w-full max-w-md" padding="lg">
-        {/* Header */}
+    <div 
+      className="h-screen flex items-center justify-center px-4 relative" 
+      style={{ background: 'var(--gradient-secondary)' }}
+    >
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                       radial-gradient(circle at 80% 70%, rgba(16, 185, 129, 0.08) 0%, transparent 50%)`
+        }}
+      />
+      <div 
+        className="w-full max-w-md relative card card--padding-lg"
+        style={{
+          borderRadius: 'var(--radius-xl)',
+          boxShadow: 'var(--shadow-xl)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid var(--border)'
+        }}
+      >
+        {/* Enhanced Header */}
         <div className="text-center mb-8">
-          <div className="page-icon mx-auto mb-4">
-            <UserPlus size={24} style={{ color: 'var(--primary)' }} />
+          <div 
+            className="mx-auto mb-6 flex items-center justify-center"
+            style={{
+              width: '80px',
+              height: '80px',
+              background: 'var(--gradient-accent)',
+              borderRadius: 'var(--radius-xl)',
+              border: '1px solid var(--border-light)',
+              boxShadow: 'var(--shadow-md)'
+            }}
+          >
+            <UserPlus size={32} style={{ color: 'var(--primary)' }} />
           </div>
-          <h1 className="page-title" style={{ fontSize: '28px', marginBottom: '8px' }}>Create Account</h1>
-          <p className="page-subtitle">Sign up to get started with your account</p>
+          <h1 className="m-0 mb-3" style={{ fontSize: '32px', fontWeight: '700', color: 'var(--text-primary)' }}>
+            Create Account
+          </h1>
+          <p className="m-0" style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+            Join us today and start your journey with our platform
+          </p>
         </div>
 
-        {/* Error Message */}
+        {/* Enhanced Error Message */}
         {error && (
-          <div className="card mb-6" style={{ 
-            background: 'var(--error)', 
-            color: 'var(--text-on-primary)',
-            padding: '12px 16px',
+          <div className="mb-6" style={{ 
+            background: 'var(--error-light)', 
+            color: 'var(--error)',
+            padding: '16px 20px',
             fontSize: '14px',
-            borderRadius: 'var(--radius)'
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--error)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}>
+            <Shield size={16} />
             {error}
           </div>
         )}
 
         {/* Signup Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label" htmlFor="email">
               <Mail size={16} style={{ display: 'inline', marginRight: '8px' }} />
@@ -197,32 +233,55 @@ const SignupPage: React.FC = () => {
             )}
           </div>
 
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            className="w-full"
-            loading={loading}
-            disabled={loading}
-          >
-            {loading ? 'Creating Account...' : 'Create Account'}
-          </Button>
+          <div className="mt-8">
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full"
+              loading={loading}
+              disabled={loading}
+              style={{
+                background: loading ? 'var(--primary)' : 'var(--gradient-primary)',
+                border: 'none',
+                boxShadow: 'var(--shadow-lg)',
+                fontSize: '16px',
+                fontWeight: '600',
+                padding: '18px 28px'
+              }}
+            >
+              {loading ? (
+                'Creating Account...'
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </Button>
+          </div>
         </form>
 
-        {/* Footer */}
-        <div className="text-center mt-8 pt-6 border-t">
-          <p className="text-secondary text-sm">
+        {/* Enhanced Footer */}
+        <div className="text-center mt-8 pt-6 border-t" style={{ borderColor: 'var(--border-light)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             Already have an account?{' '}
             <Link 
               to="/login" 
-              className="font-medium transition-colors"
-              style={{ color: 'var(--primary)' }}
+              className="font-semibold transition-colors"
+              style={{
+                background: 'var(--gradient-primary)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textDecoration: 'none'
+              }}
             >
               Sign in here
             </Link>
           </p>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }

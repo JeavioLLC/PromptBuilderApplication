@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { LogIn, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import Button from '../components/ui/Button'
-import Card from '../components/ui/Card'
+import '../styles/login.css'
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -36,35 +36,37 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex items-center justify-center bg-secondary px-4">
-      <Card className="w-full max-w-md" padding="lg">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="page-icon mx-auto mb-4">
-            <LogIn size={24} style={{ color: 'var(--primary)' }} />
+    <div className="login-container">
+      <div className="login-card">
+        {/* Enhanced Header */}
+        <div className="login-header">
+          <div className="login-icon">
+            <LogIn size={28} />
           </div>
-          <h1 className="page-title" style={{ fontSize: '28px', marginBottom: '8px' }}>Welcome Back</h1>
-          <p className="page-subtitle">Sign in to your account to continue</p>
+          <h1 className="login-title">Welcome Back</h1>
+          <p className="login-subtitle">Sign in to your account to continue your journey</p>
         </div>
 
-        {/* Error Message */}
+        {/* Enhanced Error Message */}
         {error && (
-          <div className="card mb-6" style={{ 
-            background: 'var(--error)', 
-            color: 'var(--text-on-primary)',
-            padding: '12px 16px',
-            fontSize: '14px',
-            borderRadius: 'var(--radius)'
-          }}>
+          <div 
+            className="login-error"
+            style={{
+              background: 'var(--error-light)',
+              color: 'var(--error)',
+              border: '1px solid var(--error)',
+              borderRadius: 'var(--radius-lg)'
+            }}
+          >
             {error}
           </div>
         )}
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="form-group">
-            <label className="form-label" htmlFor="email">
-              <Mail size={16} style={{ display: 'inline', marginRight: '8px' }} />
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="login-form-group">
+            <label className="login-label" htmlFor="email">
+              <Mail size={16} />
               Email Address
             </label>
             <input
@@ -72,32 +74,31 @@ const LoginPage: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="form-input"
+              className="login-input"
               placeholder="Enter your email"
               disabled={loading}
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="password">
-              <Lock size={16} style={{ display: 'inline', marginRight: '8px' }} />
+          <div className="login-form-group">
+            <label className="login-label" htmlFor="password">
+              <Lock size={16} />
               Password
             </label>
-            <div className="relative">
+            <div className="login-password-container">
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="form-input"
+                className="login-input login-password-input"
                 placeholder="Enter your password"
                 disabled={loading}
-                style={{ paddingRight: '48px' }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted hover:text-secondary transition-colors"
+                className="login-password-toggle"
                 disabled={loading}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -105,32 +106,56 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            variant="primary"
-            size="lg"
-            className="w-full"
-            loading={loading}
-            disabled={loading}
-          >
-            {loading ? 'Signing In...' : 'Sign In'}
-          </Button>
+          <div className="login-submit">
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-full"
+              loading={loading}
+              disabled={loading}
+              style={{
+                background: loading ? 'var(--primary)' : 'var(--gradient-primary)',
+                border: 'none',
+                boxShadow: 'var(--shadow-lg)',
+                fontSize: '16px',
+                fontWeight: '600',
+                padding: '18px 28px'
+              }}
+            >
+              {loading ? (
+                'Signing In...'
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </Button>
+          </div>
         </form>
 
-        {/* Footer */}
-        <div className="text-center mt-8 pt-6 border-t">
-          <p className="text-secondary text-sm">
+        {/* Enhanced Footer */}
+        <div className="login-footer">
+          <p className="login-footer-text">
             Don't have an account?{' '}
             <Link 
               to="/signup" 
-              className="font-medium transition-colors"
-              style={{ color: 'var(--primary)' }}
+              className="login-footer-link"
+              style={{
+                fontWeight: '600',
+                textDecoration: 'none',
+                background: 'var(--gradient-primary)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
             >
               Sign up here
             </Link>
           </p>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }
