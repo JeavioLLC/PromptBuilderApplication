@@ -32,8 +32,9 @@ class DatabaseConfig:
 class DevelopmentConfig(DatabaseConfig):
     """Development configuration"""
     DEBUG = True
-    # Allow overriding via env for local dev (e.g. SQLite)
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', DatabaseConfig.get_database_uri())
+    # Default to SQLite for local development, allow PostgreSQL override via env
+    # Use absolute path for SQLite database
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', f'sqlite:///{os.path.abspath("instance/prompt_builder.db")}')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 

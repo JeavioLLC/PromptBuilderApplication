@@ -21,12 +21,13 @@ def create_app(config_name=None):
     CORS(app)
     
     # Register blueprints
-    from api import categories_bp, prompts_bp, stats_bp, auth_bp, promptgen_bp
+    from api import categories_bp, prompts_bp, stats_bp, auth_bp, promptgen_bp, users_bp
     app.register_blueprint(categories_bp)
     app.register_blueprint(prompts_bp)
     app.register_blueprint(stats_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(promptgen_bp)
+    app.register_blueprint(users_bp)
     
     # Routes
     @app.route('/')
