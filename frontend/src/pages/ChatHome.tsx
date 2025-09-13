@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 interface Message {
 	id: number;
@@ -6,17 +7,27 @@ interface Message {
 	text: string;
 }
 
-const initialMessages: Message[] = [
-	{
-		id: 1,
-		sender: 'assistant',
-		text: 'Welcome to Sarathi! How can I help you today? Start typing a prompt, or I can suggest some from the library based on what you type.'
+
+function getInitialMessages(initialPrompt?: string): Message[] {
+	const msgs: Message[] = [
+		{
+			id: 1,
+			sender: 'assistant',
+			text: 'Welcome to Sarathi! How can I help you today? Start typing a prompt, or I can suggest some from the library based on what you type.'
+		}
+	];
+	if (initialPrompt) {
+		msgs.push({ id: 2, sender: 'user', text: initialPrompt });
 	}
-];
+	return msgs;
+}
+
 
 const ChatHome: React.FC = () => {
-	const [messages, setMessages] = useState<Message[]>(initialMessages);
-	const [input, setInput] = useState('');
+	const location = useLocation();
+	const initialPrompt = location.state && location.state.initialPrompt;
+	const [messages, setMessages] = useState<Message[]>(() => getInitialMessages(initialPrompt));
+	const [input, setInput] = useState(initialPrompt || '');
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {

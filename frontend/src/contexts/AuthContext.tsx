@@ -73,16 +73,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         body: JSON.stringify({ email, password })
       })
       if (res.ok) {
-        // Optionally auto-login after signup
-        setLoading(false)
-        return true
+        const data = await res.json();
+        if (data.user) {
+          setUser(data.user);
+        }
+        setLoading(false);
+        return true;
       } else {
-        setLoading(false)
-        return false
+        setLoading(false);
+        return false;
       }
     } catch {
-      setLoading(false)
-      return false
+      setLoading(false);
+      return false;
     }
   }
 

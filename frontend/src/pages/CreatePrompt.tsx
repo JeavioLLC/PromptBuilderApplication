@@ -1,6 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { generatePrompt } from '../api/generatePrompt';
+import { useAuth } from '../contexts/AuthContext';
 
 const CreatePrompt: React.FC = () => {
+  const [context, setContext] = useState('');
+  const [prompt, setPrompt] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleGenerateDraft = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const result = await generatePrompt(context, user ? { email: user.email, name: user.name } : undefined);
+      setPrompt(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate prompt');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendToChat = () => {
+    navigate('/', { state: { initialPrompt: prompt } });
+  };
+
   return (
     <div style={{ padding: '32px 0', background: '#f7f8fa', minHeight: '100vh' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
@@ -35,9 +62,30 @@ const CreatePrompt: React.FC = () => {
           </div>
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontWeight: 500, marginBottom: 6 }}>Use Case / Context</div>
-            <textarea style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 16, minHeight: 60 }} placeholder="Provide any additional context or describe the specific use case for the prompt..."></textarea>
+            <textarea
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 16, minHeight: 60 }}
+              placeholder="Provide any additional context or describe the specific use case for the prompt..."
+              value={context}
+              onChange={e => setContext(e.target.value)}
+              disabled={loading}
+            />
           </div>
-          <button style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, fontSize: 16, cursor: 'pointer', marginTop: 8 }}>Generate Draft</button>
+          <button
+            style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer', marginTop: 8 }}
+            onClick={handleGenerateDraft}
+            disabled={loading || !context.trim()}
+          >
+            {loading ? 'Generating...' : 'Generate Draft'}
+          </button>
+          {error && <div style={{ color: 'red', marginTop: 12 }}>{error}</div>}
+          {prompt && (
+            <button
+              style={{ background: '#22c55e', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 24px', fontWeight: 600, fontSize: 16, cursor: 'pointer', marginTop: 16 }}
+              onClick={handleSendToChat}
+            >
+              Send to Chat
+            </button>
+          )}
         </div>
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontWeight: 500, marginBottom: 6 }}>Prompt Title</div>
@@ -45,7 +93,11 @@ const CreatePrompt: React.FC = () => {
         </div>
         <div style={{ marginBottom: 24 }}>
           <div style={{ fontWeight: 500, marginBottom: 6 }}>Prompt Text</div>
-          <textarea style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 16, minHeight: 120 }} />
+          <textarea
+            style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: '1px solid #d1d5db', fontSize: 16, minHeight: 120 }}
+            value={prompt}
+            onChange={e => setPrompt(e.target.value)}
+          />
         </div>
         <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
           <div style={{ flex: 1 }}>
