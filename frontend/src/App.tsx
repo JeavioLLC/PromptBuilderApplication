@@ -1,74 +1,155 @@
-import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom'
-import { Layout, Menu, Typography } from 'antd'
-import {
-  DashboardOutlined,
-  AppstoreOutlined,
-  FileTextOutlined,
-} from '@ant-design/icons'
+import React from 'react'
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import AppLayout from './components/layout/AppLayout'
+import LoginPage from './pages/LoginPage'
+import SignupPage from './pages/SignupPage'
 import DashboardPage from './pages/DashboardPage'
-import CategoriesPage from './pages/CategoriesPage'
-import PromptsPage from './pages/PromptsPage'
-import PromptFormPage from './pages/PromptFormPage'
+import ChatHome from './pages/ChatHome'
+import PromptLibrary from './pages/PromptLibrary'
+import CreatePrompt from './pages/CreatePrompt'
 
-const { Header, Sider, Content, Footer } = Layout
+// Protected Route Component
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth()
 
-function AppLayout({ children }: { children: React.ReactNode }) {
-  const location = useLocation()
-  const selectedKeys = [
-    location.pathname.startsWith('/categories')
-      ? 'categories'
-      : location.pathname.startsWith('/prompts')
-      ? 'prompts'
-      : 'dashboard',
-  ]
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-secondary">
+        <div className="loading-container">
+          <div className="loading-spinner" />
+          <p className="loading-text">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
+  return user ? <>{children}</> : <Navigate to="/login" replace />
+}
+
+// Public Route Component (redirect to dashboard if already logged in)
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-secondary">
+        <div className="loading-container">
+          <div className="loading-spinner" />
+          <p className="loading-text">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return user ? <Navigate to="/dashboard" replace /> : <>{children}</>
+}
+
+// App Routes Component
+const AppRoutes: React.FC = () => {
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider breakpoint="lg" collapsedWidth="0">
-        <div className="logo">Prompt Builder</div>
-        <Menu theme="dark" mode="inline" selectedKeys={selectedKeys}>
-          <Menu.Item key="dashboard" icon={<DashboardOutlined />}>
-            <Link to="/">Dashboard</Link>
-          </Menu.Item>
-          <Menu.Item key="categories" icon={<AppstoreOutlined />}>
-            <Link to="/categories">Categories</Link>
-          </Menu.Item>
-          <Menu.Item key="prompts" icon={<FileTextOutlined />}>
-            <Link to="/prompts">Prompts</Link>
-          </Menu.Item>
-        </Menu>
-      </Sider>
-      <Layout>
-        <Header style={{ background: '#fff', padding: '0 24px' }}>
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            Prompt Builder
-          </Typography.Title>
-        </Header>
-        <Content style={{ margin: '24px' }}>
-          <div className="content-card">{children}</div>
-        </Content>
-        <Footer style={{ textAlign: 'center' }}>
-          Prompt Builder © {new Date().getFullYear()}
-        </Footer>
-      </Layout>
-    </Layout>
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/login" element={
+        <PublicRoute>
+          <LoginPage />
+        </PublicRoute>
+      } />
+
+      {/* Create Prompt Route */}
+      <Route path="/prompts/create" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <CreatePrompt />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Prompt Library Route */}
+      <Route path="/prompts" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <PromptLibrary />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/signup" element={
+        <PublicRoute>
+          <SignupPage />
+        </PublicRoute>
+      } />
+
+      {/* Protected Routes */}
+      <Route path="/dashboard" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <DashboardPage />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Home page (chat UI) */}
+      <Route path="/" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <ChatHome />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/settings" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <div className="page-container">
+              <div className="page-content">
+                <div className="empty-state">
+                  <div className="empty-state__icon">
+                    <span style={{ fontSize: '28px' }}>⚙️</span>
+                  </div>
+                  <h3 className="empty-state__title">Settings</h3>
+                  <p className="empty-state__description">
+                    Settings page coming soon
+                  </p>
+                </div>
+              </div>
+            </div>
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/help" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <div className="page-container">
+              <div className="page-content">
+                <div className="empty-state">
+                  <div className="empty-state__icon">
+                    <span style={{ fontSize: '28px' }}>❓</span>
+                  </div>
+                  <h3 className="empty-state__title">Help Center</h3>
+                  <p className="empty-state__description">
+                    Help documentation coming soon
+                  </p>
+                </div>
+              </div>
+            </div>
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Default redirect */}
+  <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
+// Main App Component
 export default function App() {
   return (
     <BrowserRouter>
-      <AppLayout>
-        <Routes>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/categories" element={<CategoriesPage />} />
-          <Route path="/prompts" element={<PromptsPage />} />
-          <Route path="/prompts/new" element={<PromptFormPage />} />
-          <Route path="/prompts/:id" element={<PromptFormPage />} />
-        </Routes>
-      </AppLayout>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </BrowserRouter>
   )
 }
-
-

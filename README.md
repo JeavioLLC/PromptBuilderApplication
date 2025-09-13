@@ -1,6 +1,8 @@
-# Prompt Builder Application
+# Sarathi
 
 A modern web application for creating, managing, and using AI prompts with dynamic variables. Built with Flask API, PostgreSQL database, and a beautiful responsive UI.
+
+Formerly known as Prompt Builder Application.
 
 ## Features
 

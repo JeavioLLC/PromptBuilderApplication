@@ -1,21 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Enhanced Professional Design System - Modern White & Blue */
+:root {
+  /* Primary Blue - Enhanced */
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-light: #eff6ff;
+  --primary-dark: #1e40af;
+  
+  /* Backgrounds - Enhanced Hierarchy */
+  --bg-main: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-hover: #e2e8f0;
+  --bg-accent: #fafbfc;
+  
+  /* Text - Enhanced Contrast */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-on-primary: #ffffff;
+  --text-accent: #3b82f6;
+  
+  /* Borders - Enhanced Depth */
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --border-focus: #3b82f6;
+  --border-hover: #cbd5e1;
+  
+  /* Status Colors - Enhanced */
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --error: #ef4444;
+  --error-light: #fee2e2;
+  --info: #06b6d4;
+  --info-light: #cffafe;
+  
+  /* Shadows - Enhanced Depth */
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  
+  /* Radius - Enhanced */
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  --gradient-secondary: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --gradient-accent: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+/* Base Styles */
 html, body, #root {
   height: 100%;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.logo {
-  height: 48px;
-  margin: 16px;
-  color: #fff;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
+body {
+  background: var(--bg-main);
+  color: var(--text-primary);
 }
 
-.content-card {
-  background: #fff;
-  padding: 24px;
-  min-height: 360px;
-  border-radius: 8px;
+/* Smooth transitions */
+* {
+  transition: all 0.15s ease;
 }
 
+/* Clean scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
 
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
