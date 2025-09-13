@@ -19,54 +19,44 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
 
   return (
     <aside style={{
-      width: '280px',
+      width: '260px',
       flexShrink: 0,
-      background: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(20px)',
-      borderRight: '1px solid rgba(226, 232, 240, 0.6)',
+      background: 'var(--shuttle-bg-card)',
+      borderRight: '1px solid var(--shuttle-border)',
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+      boxShadow: 'var(--shuttle-shadow-sm)',
       position: 'relative'
     }}>
-      {/* Header */}
+      {/* Clean Header */}
       <div style={{
-        height: '100px',
+        height: '80px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        borderBottom: '1px solid rgba(226, 232, 240, 0.4)',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        position: 'relative',
-        overflow: 'hidden'
+        borderBottom: '1px solid var(--shuttle-border-light)',
+        background: 'var(--shuttle-bg-card)',
+        padding: '0 24px'
       }}>
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-50%',
-          width: '200%',
-          height: '200%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-          animation: 'pulse 4s ease-in-out infinite'
-        }} />
-        <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
+        <div style={{ textAlign: 'center' }}>
           <h1 style={{
-            fontSize: '24px',
-            fontWeight: '700',
-            color: 'white',
+            fontSize: '20px',
+            fontWeight: '600',
+            color: 'var(--shuttle-text-primary)',
             margin: '0',
-            letterSpacing: '-0.025em',
-            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            letterSpacing: '-0.01em'
           }}>
             Prompt Builder
           </h1>
           <p style={{
-            fontSize: '12px',
-            color: 'rgba(255, 255, 255, 0.8)',
-            margin: '4px 0 0 0',
-            fontWeight: '500'
+            fontSize: '11px',
+            color: 'var(--shuttle-text-muted)',
+            margin: '2px 0 0 0',
+            fontWeight: '400',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
           }}>
-            AI Assistant Platform
+            AI Assistant
           </p>
         </div>
       </div>
@@ -74,19 +64,19 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
       {/* Navigation */}
       <nav style={{
         flex: 1,
-        padding: '32px 20px',
+        padding: '24px 16px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px'
+        gap: '4px'
       }}>
         <div style={{
-          fontSize: '12px',
-          fontWeight: '600',
-          color: '#64748b',
+          fontSize: '11px',
+          fontWeight: '500',
+          color: 'var(--shuttle-text-muted)',
           textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          marginBottom: '16px',
-          paddingLeft: '16px'
+          letterSpacing: '0.8px',
+          marginBottom: '12px',
+          paddingLeft: '12px'
         }}>
           Navigation
         </div>
@@ -102,36 +92,33 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                padding: '16px 20px',
-                borderRadius: '16px',
+                padding: '12px 16px',
+                borderRadius: 'var(--shuttle-radius)',
                 fontWeight: '500',
-                fontSize: '15px',
+                fontSize: '14px',
                 textDecoration: 'none',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'all 0.2s ease',
                 position: 'relative',
-                overflow: 'hidden',
+                margin: '2px 0',
                 ...(active ? {
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  boxShadow: '0 8px 25px -8px rgba(102, 126, 234, 0.6)',
-                  transform: 'translateY(-2px)'
+                  background: 'var(--shuttle-primary)',
+                  color: 'var(--shuttle-text-on-primary)',
+                  boxShadow: 'var(--shuttle-shadow-sm)'
                 } : {
-                  color: '#475569',
+                  color: 'var(--shuttle-text-secondary)',
                   background: 'transparent'
                 })
               }}
               onMouseEnter={(e) => {
                 if (!active) {
-                  e.currentTarget.style.background = 'rgba(102, 126, 234, 0.08)'
-                  e.currentTarget.style.transform = 'translateX(4px)'
-                  e.currentTarget.style.color = '#667eea'
+                  e.currentTarget.style.background = 'var(--shuttle-bg-hover)'
+                  e.currentTarget.style.color = 'var(--shuttle-text-primary)'
                 }
               }}
               onMouseLeave={(e) => {
                 if (!active) {
                   e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.transform = 'translateX(0)'
-                  e.currentTarget.style.color = '#475569'
+                  e.currentTarget.style.color = 'var(--shuttle-text-secondary)'
                 }
               }}
             >
@@ -139,69 +126,69 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
                 <div style={{
                   position: 'absolute',
                   left: '0',
-                  top: '0',
-                  bottom: '0',
-                  width: '4px',
-                  background: 'rgba(255, 255, 255, 0.8)',
-                  borderRadius: '0 4px 4px 0'
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '3px',
+                  height: '20px',
+                  background: 'var(--shuttle-text-on-primary)',
+                  borderRadius: '0 2px 2px 0'
                 }} />
               )}
-              <IconComponent size={20} style={{ marginRight: '16px' }} />
+              <IconComponent size={18} style={{ marginRight: '12px' }} />
               <span>{item.label}</span>
             </Link>
           )
         })}
       </nav>
 
-      {/* User Profile */}
+      {/* Clean User Profile */}
       <div style={{
-        padding: '24px',
-        borderTop: '1px solid rgba(226, 232, 240, 0.4)',
-        background: 'linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.9) 100%)'
+        padding: '16px',
+        borderTop: '1px solid var(--shuttle-border-light)',
+        background: 'var(--shuttle-bg-secondary)'
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '16px',
-          padding: '16px',
-          background: 'rgba(255, 255, 255, 0.7)',
-          borderRadius: '16px',
-          border: '1px solid rgba(226, 232, 240, 0.6)',
-          backdropFilter: 'blur(10px)'
+          gap: '12px',
+          padding: '12px',
+          background: 'var(--shuttle-bg-card)',
+          borderRadius: 'var(--shuttle-radius)',
+          border: '1px solid var(--shuttle-border-light)',
+          boxShadow: 'var(--shuttle-shadow-sm)'
         }}>
           <div style={{ position: 'relative' }}>
             <img 
               style={{
-                height: '48px',
-                width: '48px',
-                borderRadius: '12px',
+                height: '36px',
+                width: '36px',
+                borderRadius: 'var(--shuttle-radius-sm)',
                 objectFit: 'cover',
-                border: '2px solid rgba(102, 126, 234, 0.2)',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                border: '2px solid var(--shuttle-border)',
+                background: 'var(--shuttle-bg-secondary)'
               }}
-              src={userProfile.avatar || "https://placehold.co/100x100/4F46E5/FFFFFF?text=AU"} 
+              src={userProfile.avatar || "https://placehold.co/100x100/4a90a4/FFFFFF?text=AU"} 
               alt="User avatar" 
             />
             {userProfile.isOnline && (
               <div style={{
                 position: 'absolute',
-                bottom: '-2px',
-                right: '-2px',
-                height: '16px',
-                width: '16px',
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                bottom: '-1px',
+                right: '-1px',
+                height: '10px',
+                width: '10px',
+                background: 'var(--shuttle-success)',
                 borderRadius: '50%',
-                border: '2px solid white',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                border: '2px solid var(--shuttle-bg-card)'
               }} />
             )}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#1e293b',
-              margin: '0 0 2px 0',
+              fontSize: '13px',
+              fontWeight: '500',
+              color: 'var(--shuttle-text-primary)',
+              margin: '0 0 1px 0',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap'
@@ -209,19 +196,19 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
               {userProfile.name}
             </p>
             <p style={{
-              fontSize: '12px',
-              color: '#64748b',
+              fontSize: '11px',
+              color: 'var(--shuttle-text-muted)',
               margin: '0',
               display: 'flex',
               alignItems: 'center'
             }}>
               {userProfile.isOnline && (
                 <span style={{
-                  width: '8px',
-                  height: '8px',
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  width: '6px',
+                  height: '6px',
+                  background: 'var(--shuttle-success)',
                   borderRadius: '50%',
-                  marginRight: '8px'
+                  marginRight: '6px'
                 }} />
               )}
               {userProfile.role}

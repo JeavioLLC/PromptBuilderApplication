@@ -28,7 +28,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     <div style={{ 
       display: 'flex', 
       height: '100vh', 
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%)' 
+      background: 'var(--shuttle-bg-main)' 
     }}>
       <Sidebar 
         currentPath={location.pathname}
@@ -38,7 +38,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <main style={{ 
         flex: 1, 
         display: 'flex', 
-        flexDirection: 'column' 
+        flexDirection: 'column',
+        background: 'var(--shuttle-bg-secondary)'
       }}>
         {children}
       </main>

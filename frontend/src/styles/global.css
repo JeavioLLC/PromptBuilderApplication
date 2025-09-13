@@ -3,53 +3,59 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Enhanced Sarathi Design System */
+/* Import our custom style system */
+@import './components.css';
+@import './layouts.css';
+
+/* Minimalist Design System */
 :root {
-  /* Primary Colors */
-  --sarathi-primary: #4f46e5;
-  --sarathi-primary-hover: #4338ca;
-  --sarathi-primary-light: #eef2ff;
-  --sarathi-primary-dark: #3730a3;
+  /* Primary Accent - Calm Blue */
+  --shuttle-primary: #4a90a4;
+  --shuttle-primary-hover: #3a7a8c;
+  --shuttle-primary-light: #e8f4f6;
+  --shuttle-primary-dark: #2a6a7c;
   
-  /* Background Colors */
-  --sarathi-bg-main: #fafbfc;
-  --sarathi-bg-secondary: #f8fafc;
-  --sarathi-bg-card: #ffffff;
-  --sarathi-bg-hover: #f1f5f9;
-  --sarathi-bg-active: #e2e8f0;
+  /* Background Colors - Off-white & Light Grays */
+  --shuttle-bg-main: #fafafa;
+  --shuttle-bg-secondary: #f5f5f5;
+  --shuttle-bg-card: #ffffff;
+  --shuttle-bg-hover: #f0f0f0;
+  --shuttle-bg-active: #eeeeee;
   
-  /* Text Colors */
-  --sarathi-text-primary: #0f172a;
-  --sarathi-text-secondary: #475569;
-  --sarathi-text-muted: #64748b;
-  --sarathi-text-light: #94a3b8;
+  /* Text Colors - High Contrast */
+  --shuttle-text-primary: #2c2c2c;
+  --shuttle-text-secondary: #666666;
+  --shuttle-text-muted: #999999;
+  --shuttle-text-light: #bbbbbb;
+  --shuttle-text-on-primary: #ffffff;
   
-  /* Border & Divider Colors */
-  --sarathi-border: #e2e8f0;
-  --sarathi-border-light: #f1f5f9;
-  --sarathi-border-focus: #4f46e5;
+  /* Border Colors */
+  --shuttle-border: #e0e0e0;
+  --shuttle-border-light: #f0f0f0;
+  --shuttle-border-medium: #cccccc;
+  --shuttle-border-focus: #4a90a4;
   
-  /* Status Colors */
-  --sarathi-success: #10b981;
-  --sarathi-warning: #f59e0b;
-  --sarathi-error: #ef4444;
-  --sarathi-info: #3b82f6;
+  /* Status Colors - Muted */
+  --shuttle-success: #5a9367;
+  --shuttle-warning: #b8860b;
+  --shuttle-error: #c85a54;
+  --shuttle-info: #4a90a4;
   
-  /* Shadow & Effects */
-  --sarathi-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --sarathi-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --sarathi-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --sarathi-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  /* Shadows - Subtle */
+  --shuttle-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shuttle-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shuttle-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shuttle-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
   
-  /* Gradients */
-  --sarathi-gradient-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --sarathi-gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-  --sarathi-gradient-bg: linear-gradient(135deg, #fafbfc 0%, #f1f5f9 100%);
+  /* Minimal Gradients */
+  --shuttle-gradient-subtle: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+  --shuttle-gradient-primary: linear-gradient(135deg, #4a90a4 0%, #3a7a8c 100%);
   
-  /* Spacing */
-  --sarathi-radius: 12px;
-  --sarathi-radius-sm: 8px;
-  --sarathi-radius-lg: 16px;
+  /* Spacing & Radius */
+  --shuttle-radius: 8px;
+  --shuttle-radius-sm: 4px;
+  --shuttle-radius-lg: 12px;
+  --shuttle-radius-xl: 16px;
 }
 
 /* Enhanced Base Styles */
@@ -62,8 +68,8 @@ html, body, #root {
 }
 
 body {
-  background: var(--sarathi-gradient-bg);
-  color: var(--sarathi-text-primary);
+  background: var(--shuttle-bg-main);
+  color: var(--shuttle-text-primary);
   line-height: 1.6;
 }
 
