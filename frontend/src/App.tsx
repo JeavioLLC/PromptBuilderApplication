@@ -8,6 +8,14 @@ import DashboardPage from './pages/DashboardPage'
 import ChatHome from './pages/ChatHome'
 import PromptLibrary from './pages/PromptLibrary'
 import CreatePrompt from './pages/CreatePrompt'
+import MyContributions from './pages/MyContributions'
+      <Route path="/contributions" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <MyContributions />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -55,6 +63,9 @@ const AppRoutes: React.FC = () => {
           <LoginPage />
         </PublicRoute>
       } />
+
+      {/* My Contributions Route */}
+
 
       {/* Create Prompt Route */}
       <Route path="/prompts/create" element={
