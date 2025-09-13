@@ -2,18 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../components/ui/Modal';
 
-const USERS = [
-  { name: 'Hiren Jivani (Admin)', email: 'hiren.jivani@jeavio.com', role: 'Admin' },
-  { name: 'Bob Smith', email: 'bob@example.com', role: 'User' },
-  { name: 'Charlie Brown', email: 'charlie@example.com', role: 'User' },
-];
-
-const TABS = [
-  'User Management',
-  'LLM Management',
-  'Tag Management',
-];
-
 const LLM_LIST = [
   { version: 'Gemini 2.6 Pro', status: 'Active', fallback: 'None' },
   { version: 'GPT-4 Turbo', status: 'Active', fallback: 'None' },
@@ -23,7 +11,6 @@ const LLM_LIST = [
 
 const AdminPanel: React.FC = () => {
   const [tab, setTab] = useState(0);
-  const [users, setUsers] = useState(USERS);
   const [llms, setLlms] = useState(LLM_LIST);
   const [requestTags, setRequestTags] = useState([
     { name: 'Project', status: 'Active', mandatory: true },
@@ -62,116 +49,44 @@ const AdminPanel: React.FC = () => {
         <h1 style={{ fontSize: 36, fontWeight: 700, color: '#222', marginBottom: 24 }}>Admin Panel</h1>
         <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: 0 }}>
           <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb' }}>
-            {TABS.map((t, i) => (
-              <button
-                key={t}
-                onClick={() => setTab(i)}
-                style={{
-                  flex: 1,
-                  padding: '18px 0',
-                  fontWeight: 600,
-                  fontSize: 17,
-                  color: tab === i ? '#2563eb' : '#374151',
-                  border: 'none',
-                  background: 'none',
-                  borderBottom: tab === i ? '3px solid #2563eb' : '3px solid transparent',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  transition: 'color 0.2s, border-bottom 0.2s'
-                }}
-              >
-                {t}
-              </button>
-            ))}
-            <div style={{ flex: 1 }} />
             <button
+              onClick={() => setTab(0)}
               style={{
-                background: '#2563eb',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                padding: '10px 24px',
+                flex: 1,
+                padding: '18px 0',
                 fontWeight: 600,
-                fontSize: 16,
-                margin: 12,
+                fontSize: 17,
+                color: tab === 0 ? '#2563eb' : '#374151',
+                border: 'none',
+                background: 'none',
+                borderBottom: tab === 0 ? '3px solid #2563eb' : '3px solid transparent',
                 cursor: 'pointer',
-                alignSelf: 'center'
+                outline: 'none',
+                transition: 'color 0.2s, border-bottom 0.2s'
               }}
-              onClick={() => navigate('/admin/add-user')}
             >
-              ＋ Add New User
+              LLM Management
+            </button>
+            <button
+              onClick={() => setTab(1)}
+              style={{
+                flex: 1,
+                padding: '18px 0',
+                fontWeight: 600,
+                fontSize: 17,
+                color: tab === 1 ? '#2563eb' : '#374151',
+                border: 'none',
+                background: 'none',
+                borderBottom: tab === 1 ? '3px solid #2563eb' : '3px solid transparent',
+                cursor: 'pointer',
+                outline: 'none',
+                transition: 'color 0.2s, border-bottom 0.2s'
+              }}
+            >
+              Tag Management
             </button>
           </div>
           {tab === 0 && (
-            <div style={{ padding: 32 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
-                <thead>
-                  <tr style={{ background: '#f7f8fa', textAlign: 'left', fontWeight: 600, color: '#6b7280', fontSize: 15 }}>
-                    <th style={{ padding: '18px 32px' }}>NAME</th>
-                    <th style={{ padding: '18px 32px' }}>EMAIL</th>
-                    <th style={{ padding: '18px 32px' }}>ROLE</th>
-                    <th style={{ padding: '18px 32px' }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user, idx) => (
-                    <tr key={user.email} style={{ borderTop: idx === 0 ? 'none' : '1px solid #e5e7eb', fontSize: 17 }}>
-                      <td style={{ padding: '18px 32px', fontWeight: 600, color: '#222' }}>{user.name}</td>
-                      <td style={{ padding: '18px 32px', color: '#374151' }}>{user.email}</td>
-                      <td style={{ padding: '18px 32px', color: '#374151' }}>{user.role}</td>
-                      <td style={{ padding: '18px 32px', textAlign: 'right' }}>
-                        <a
-                          href="#"
-                          style={{ color: '#2563eb', fontWeight: 600, marginRight: 18, textDecoration: 'none', cursor: 'pointer' }}
-                          onClick={e => {
-                            e.preventDefault();
-                            navigate('/admin/edit-user', { state: { user } });
-                          }}
-                        >
-                          Edit
-                        </a>
-                        <a
-                          href="#"
-                          style={{ color: '#ef4444', fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}
-                          onClick={e => {
-                            e.preventDefault();
-                            handleDelete(user);
-                          }}
-                        >
-                          Delete
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <Modal
-                isOpen={isDeleteModalOpen}
-                onClose={cancelDelete}
-                title="Delete User Confirmation"
-                maxWidth="400px"
-              >
-                <div style={{ padding: '12px 0 0 0', fontSize: 17, color: '#222' }}>
-                  Are you sure you want to delete <b>{deleteUser?.name}</b>?
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 28 }}>
-                  <button
-                    onClick={cancelDelete}
-                    style={{ padding: '8px 22px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#f3f4f6', color: '#374151', fontWeight: 600, fontSize: 16 }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmDelete}
-                    style={{ padding: '8px 22px', borderRadius: 6, border: 'none', background: '#ef4444', color: '#fff', fontWeight: 600, fontSize: 16 }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </Modal>
-            </div>
-          )}
-          {tab === 1 && (
             <div style={{ padding: 32 }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
                 <thead>
@@ -244,7 +159,7 @@ const AdminPanel: React.FC = () => {
               </table>
             </div>
           )}
-          {tab === 2 && (
+          {tab === 1 && (
             <div style={{ padding: 32 }}>
               <div style={{ marginBottom: 40 }}>
                 <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 4 }}>Request Prompt Tags</div>

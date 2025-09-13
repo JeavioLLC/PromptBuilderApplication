@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, BookOpen, UserCheck, Shield, LogOut, User } from 'lucide-react'
+import { Home, BookOpen, UserCheck, LogOut, User, Shield } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 interface NavItem {
@@ -13,7 +13,7 @@ const navItems: NavItem[] = [
   { path: '/dashboard', label: 'Home', icon: Home },
   { path: '/prompts', label: 'Prompt Library', icon: BookOpen },
   { path: '/contributions', label: 'My Contributions', icon: UserCheck },
-  { path: '/profile', label: 'Admin', icon: Shield },
+  { path: '/admin', label: 'Admin Panel', icon: Shield },
 ]
 
 const Sidebar: React.FC = () => {
@@ -78,7 +78,6 @@ const Sidebar: React.FC = () => {
         {navItems.map((item) => {
           const active = isActive(item.path)
           const IconComponent = item.icon
-          
           return (
             <Link
               key={item.path}
@@ -100,124 +99,72 @@ const Sidebar: React.FC = () => {
                   boxShadow: 'var(--shadow-sm)'
                 } : {
                   color: 'var(--text-secondary)',
-                  background: 'transparent'
+                  background: 'none'
                 })
               }}
-              onMouseEnter={(e) => {
-                if (!active) {
-                  e.currentTarget.style.background = 'var(--bg-hover)'
-                  e.currentTarget.style.color = 'var(--text-primary)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!active) {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--text-secondary)'
-                }
-              }}
             >
-              {active && (
-                <div style={{
-                  position: 'absolute',
-                  left: '0',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: '3px',
-                  height: '20px',
-                  background: 'var(--text-on-primary)',
-                  borderRadius: '0 2px 2px 0'
-                }} />
-              )}
-              <IconComponent size={18} style={{ marginRight: '12px' }} />
-              <span>{item.label}</span>
+              <IconComponent size={18} style={{ marginRight: 12 }} />
+              {item.label}
             </Link>
           )
         })}
       </nav>
 
       {/* User Profile & Logout */}
-      <div style={{
-        padding: '16px',
-        borderTop: '1px solid var(--border-light)',
-        background: 'var(--bg-secondary)'
-      }}>
-        {/* User Info */}
+      <Link
+        to="/profile"
+        style={{
+          display: 'block',
+          textDecoration: 'none',
+          color: 'inherit',
+        }}
+      >
         <div style={{
+          padding: '16px',
+          borderTop: '1px solid var(--border-light)',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
-          padding: '12px',
-          background: 'var(--bg-card)',
-          borderRadius: 'var(--radius)',
-          border: '1px solid var(--border-light)',
-          boxShadow: 'var(--shadow-sm)',
-          marginBottom: '12px'
+          gap: 12,
+          cursor: 'pointer',
         }}>
           <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: 'var(--radius-sm)',
-            background: 'var(--primary-light)',
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            background: '#f3f4f6',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '2px solid var(--border)'
+            fontSize: 22,
+            color: '#9ca3af',
+            fontWeight: 600,
           }}>
-            <User size={18} style={{ color: 'var(--primary)' }} />
+            <User size={22} />
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{
-              fontSize: '13px',
-              fontWeight: '500',
-              color: 'var(--text-primary)',
-              margin: '0 0 1px 0',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}>
-              {user?.name || 'User'}
-            </p>
-            <p style={{
-              fontSize: '11px',
-              color: 'var(--text-muted)',
-              margin: '0',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}>
-              {user?.email}
-            </p>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, color: '#222', fontSize: 15 }}>{user?.name || 'niki'}</div>
+            <div style={{ color: '#6b7280', fontSize: 13 }}>{user?.email || 'niki@jeavio.com'}</div>
           </div>
         </div>
-
-        {/* Logout Button */}
+      </Link>
+      <div style={{ padding: '0 16px 16px 16px' }}>
         <button
           onClick={handleLogout}
           style={{
-            width: '100%',
+            background: 'none',
+            border: 'none',
+            color: '#374151',
+            fontWeight: 500,
+            fontSize: 15,
             display: 'flex',
             alignItems: 'center',
-            padding: '12px 16px',
-            borderRadius: 'var(--radius)',
-            fontWeight: '500',
-            fontSize: '14px',
-            border: 'none',
-            background: 'transparent',
-            color: 'var(--text-secondary)',
+            gap: 8,
             cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--error)'
-            e.currentTarget.style.color = 'var(--text-on-primary)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = 'var(--text-secondary)'
+            marginTop: 4,
           }}
         >
-          <LogOut size={18} style={{ marginRight: '12px' }} />
-          <span>Sign Out</span>
+          <LogOut size={18} />
+          Sign Out
         </button>
       </div>
     </aside>
