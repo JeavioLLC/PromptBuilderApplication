@@ -10,7 +10,7 @@ interface AuthContextType {
   user: User | null
   login: (email: string, password: string) => Promise<boolean>
   signup: (email: string, password: string, confirmPassword: string) => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
   loading: boolean
 }
 
@@ -33,69 +33,65 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing session on app load
-    const savedUser = localStorage.getItem('user')
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser))
-      } catch (error) {
-        localStorage.removeItem('user')
-      }
-    }
+    // Optionally, check session on load (not implemented here for speed)
     setLoading(false)
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Mock validation - in real app, this would be an API call
-    if (email && password.length >= 6) {
-      const mockUser: User = {
-        id: '1',
-        email,
-        name: email.split('@')[0]
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setUser(data.user)
+        setLoading(false)
+        return true
+      } else {
+        setUser(null)
+        setLoading(false)
+        return false
       }
-      
-      setUser(mockUser)
-      localStorage.setItem('user', JSON.stringify(mockUser))
+    } catch {
+      setUser(null)
       setLoading(false)
-      return true
+      return false
     }
-    
-    setLoading(false)
-    return false
   }
 
   const signup = async (email: string, password: string, confirmPassword: string): Promise<boolean> => {
     setLoading(true)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Mock validation
-    if (email && password.length >= 6 && password === confirmPassword) {
-      const mockUser: User = {
-        id: '1',
-        email,
-        name: email.split('@')[0]
+    try {
+      const res = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password })
+      })
+      if (res.ok) {
+        // Optionally auto-login after signup
+        setLoading(false)
+        return true
+      } else {
+        setLoading(false)
+        return false
       }
-      
-      setUser(mockUser)
-      localStorage.setItem('user', JSON.stringify(mockUser))
+    } catch {
       setLoading(false)
-      return true
+      return false
     }
-    
-    setLoading(false)
-    return false
   }
 
-  const logout = () => {
+  const logout = async () => {
+    await fetch('/api/logout', {
+      method: 'POST',
+      credentials: 'include'
+    })
     setUser(null)
-    localStorage.removeItem('user')
   }
 
   const value: AuthContextType = {
