@@ -16,12 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app
 
-ENV FLASK_ENV=development \
-    DB_HOST=db \
-    DB_PORT=5432 \
-    DB_NAME=prompt_builder \
-    DB_USER=postgres \
-    DB_PASSWORD=postgres
+# Environment variables will be provided by docker-compose.yml
 
 EXPOSE 5000
 
