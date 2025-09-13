@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client'
 import { ConfigProvider, theme } from 'antd'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App'
-import 'antd/dist/reset.css'
 import './styles/global.css'
 
 const queryClient = new QueryClient({
