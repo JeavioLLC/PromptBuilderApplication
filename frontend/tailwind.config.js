@@ -10,6 +10,20 @@ export default {
         'inter': ['Inter', 'sans-serif'],
       },
       colors: {
+        'sarathi': {
+          'primary': 'var(--sarathi-primary)',
+          'primary-hover': 'var(--sarathi-primary-hover)',
+          'bg-main': 'var(--sarathi-bg-main)',
+          'bg-gray': 'var(--sarathi-bg-gray)',
+          'text-primary': 'var(--sarathi-text-primary)',
+          'text-secondary': 'var(--sarathi-text-secondary)',
+          'border': 'var(--sarathi-border)',
+          'active-bg': 'var(--sarathi-active-bg)',
+          'selected-bg': 'var(--sarathi-selected-bg)',
+          'selected-border': 'var(--sarathi-selected-border)',
+          'code-bg': 'var(--sarathi-code-bg)',
+          'code-text': 'var(--sarathi-code-text)',
+        },
         'sarathi-blue': '#3b82f6',
         'sarathi-gray': {
           50: '#f9fafb',

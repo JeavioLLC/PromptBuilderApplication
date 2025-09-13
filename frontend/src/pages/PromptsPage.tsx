@@ -20,12 +20,15 @@ export default function PromptsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-semibold text-gray-800">Prompt Library</h2>
+    <div className="flex-1 overflow-y-auto px-8 py-8 bg-gradient-to-br from-white via-slate-50 to-blue-50/30">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Prompt Library</h1>
+          <p className="text-slate-600">Discover and manage your AI prompts</p>
+        </div>
         <button
           onClick={() => navigate('/prompts/new')}
-          className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center space-x-2"
+          className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
         >
           <PlusCircle className="w-5 h-5" />
           <span>Add New Prompt</span>

@@ -132,137 +132,178 @@ hello_world()`
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
-      {/* Chat History */}
-      <div 
+    <div className="h-full flex flex-col bg-gradient-to-br from-white via-slate-50 to-blue-50/30">
+      {/* Enhanced Chat Header */}
+      <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 px-8 py-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">AI Chat Assistant</h1>
+            <p className="text-sm text-slate-600 mt-1">Start a conversation or get prompt suggestions</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 bg-emerald-50 px-3 py-1.5 rounded-full">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+              <span className="text-xs font-medium text-emerald-700">AI Online</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Chat History */}
+      <div
+        id="chat-container"
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-6 space-y-6"
+        className="flex-1 overflow-y-auto px-8 py-8 space-y-8"
       >
         {chatHistory.map((message) => (
-          <div key={message.id} className={`flex items-start gap-4 ${message.role === 'user' ? 'justify-end' : ''}`}>
+          <div key={message.id} className={`flex items-start gap-6 ${message.role === 'user' ? 'justify-end' : ''} animate-in slide-in-from-bottom-4 duration-500`}>
             {/* AI Avatar */}
             {message.role === 'ai' && (
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
-                P
+              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg ring-2 ring-indigo-100">
+                <span className="text-xl">🤖</span>
               </div>
             )}
 
-            {/* Message Bubble */}
-            <div className={message.role === 'user' ? 'text-right' : ''}>
-              <p className="font-semibold text-sm mb-1 text-gray-700">
-                {message.role === 'ai' ? 'Prompt Builder Assistant' : 'You'}
-              </p>
-              <div className={`p-4 rounded-lg shadow-sm inline-block text-left max-w-2xl ${
+            {/* Enhanced Message Bubble */}
+            <div className={`max-w-3xl ${message.role === 'user' ? 'text-right' : ''}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-sm font-semibold text-slate-700">
+                  {message.role === 'ai' ? 'Prompt Builder Assistant' : 'You'}
+                </p>
+                <span className="text-xs text-slate-500">
+                  {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+              <div className={`inline-block text-left prose prose-sm max-w-none transition-all duration-200 hover:shadow-md ${
                 message.role === 'user' 
-                  ? 'bg-blue-50 border border-blue-100' 
-                  : 'bg-white border border-gray-200'
+                  ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-6 rounded-3xl rounded-tr-lg shadow-lg' 
+                  : 'bg-white p-6 rounded-3xl rounded-tl-lg shadow-sm border border-slate-200/60'
               }`}>
-                <div className="whitespace-pre-wrap font-sans text-sm text-gray-800 leading-relaxed">
-                  {message.content}
-                </div>
+                <p className={message.role === 'user' ? 'text-white m-0' : 'text-slate-700 m-0'}>{message.content}</p>
               </div>
               
-              {/* Vote buttons for AI messages */}
+              {/* Enhanced Vote buttons for AI messages */}
               {message.role === 'ai' && (
-                <div className="flex items-center space-x-2 mt-2">
+                <div className="flex items-center space-x-3 mt-4">
                   <button
                     onClick={() => rateMessage(message.id, 'upvoted')}
-                    className={`p-1 rounded-md hover:bg-gray-200 transition-colors ${
-                      message.feedback === 'upvoted' ? 'text-blue-600 bg-blue-100' : 'text-gray-500'
+                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      message.feedback === 'upvoted' 
+                        ? 'text-emerald-700 bg-emerald-100 shadow-sm' 
+                        : 'text-slate-500 hover:text-emerald-600 hover:bg-emerald-50'
                     }`}
                   >
-                    <ThumbsUp className="w-4 h-4" />
+                    <ThumbsUp className="w-3.5 h-3.5" />
+                    <span>Helpful</span>
                   </button>
                   <button
                     onClick={() => rateMessage(message.id, 'downvoted')}
-                    className={`p-1 rounded-md hover:bg-gray-200 transition-colors ${
-                      message.feedback === 'downvoted' ? 'text-red-600 bg-red-100' : 'text-gray-500'
+                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      message.feedback === 'downvoted' 
+                        ? 'text-red-700 bg-red-100 shadow-sm' 
+                        : 'text-slate-500 hover:text-red-600 hover:bg-red-50'
                     }`}
                   >
-                    <ThumbsDown className="w-4 h-4" />
+                    <ThumbsDown className="w-3.5 h-3.5" />
+                    <span>Not helpful</span>
                   </button>
                 </div>
               )}
             </div>
 
-            {/* User Avatar */}
+            {/* Enhanced User Avatar */}
             {message.role === 'user' && (
               <div className="flex-shrink-0">
-                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
-                  U
-                </div>
+                <img
+                  className="h-12 w-12 rounded-2xl object-cover shadow-lg ring-2 ring-indigo-100"
+                  src="https://placehold.co/100x100/4F46E5/FFFFFF?text=YOU"
+                  alt="User avatar"
+                />
               </div>
             )}
           </div>
         ))}
 
-        {/* AI Typing Indicator */}
+        {/* Enhanced AI Typing Indicator */}
         {isAiTyping && (
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
-              P
+          <div className="flex items-start gap-6 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg ring-2 ring-indigo-100">
+              <span className="text-xl">🤖</span>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <div className="flex items-center space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+            <div className="max-w-3xl">
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-sm font-semibold text-slate-700">Prompt Builder Assistant</p>
+                <span className="text-xs text-slate-500">typing...</span>
+              </div>
+              <div className="bg-white p-6 rounded-3xl rounded-tl-lg shadow-sm border border-slate-200/60 inline-block">
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-indigo-400 rounded-full animate-bounce"></div>
+                  <div className="w-3 h-3 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-3 h-3 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Prompt Input Area */}
-      <div className="px-6 py-6 bg-white border-t border-gray-200">
-        <div className="relative max-w-4xl mx-auto">
-          {/* Recommendations Dropdown */}
-          {recommendations.length > 0 && (
-            <div className="absolute bottom-full left-0 right-0 mb-2 z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-              <p className="text-xs font-semibold text-gray-500 p-3 border-b bg-gray-50">RECOMMENDATIONS</p>
-              <ul>
-                {recommendations.map((rec) => (
-                  <li
-                    key={rec.id}
-                    onClick={() => selectRecommendation(rec)}
-                    className="px-4 py-3 cursor-pointer hover:bg-gray-50 border-b last:border-b-0 transition-colors"
-                  >
-                    <p className="font-semibold text-gray-800 text-sm">{rec.title}</p>
-                    <p className="text-sm text-gray-500 truncate mt-1">{rec.content}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
+      {/* Enhanced Prompt Input Area */}
+      <div className="px-8 py-6 bg-white/90 backdrop-blur-xl border-t border-slate-200/60 shadow-lg">
+        <div className="max-w-4xl mx-auto">
           <div className="relative">
-            <textarea
-              value={currentPrompt}
-              onChange={(e) => {
-                setCurrentPrompt(e.target.value)
-                getRecommendations(e.target.value)
-              }}
-              onKeyDown={handleKeyDown}
-              className="w-full p-4 pr-24 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none shadow-sm text-gray-800 placeholder-gray-500"
-              placeholder="Enter your prompt here..."
-              rows={3}
-            />
-            <div className="absolute bottom-3 right-3 flex items-center space-x-2">
-              <button
-                onClick={saveCurrentPrompt}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Save current prompt to library"
-              >
-                <Save className="w-5 h-5" />
-              </button>
-              <button
-                onClick={sendPrompt}
-                disabled={!currentPrompt.trim() || isAiTyping}
-                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm disabled:bg-blue-300 disabled:cursor-not-allowed"
-                title="Send prompt"
-              >
-                <Send className="w-5 h-5" />
-              </button>
+            {/* Enhanced Recommendations Dropdown */}
+            {recommendations.length > 0 && (
+              <div className="absolute bottom-full left-0 right-0 mb-4 z-10 w-full bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-xl max-h-80 overflow-y-auto">
+                <div className="p-4 border-b border-slate-200/60 bg-gradient-to-r from-indigo-50 to-purple-50">
+                  <p className="text-sm font-semibold text-slate-700 flex items-center">
+                    <span className="w-2 h-2 bg-indigo-400 rounded-full mr-2"></span>
+                    SMART SUGGESTIONS
+                  </p>
+                </div>
+                <div className="p-2">
+                  {recommendations.map((rec) => (
+                    <div
+                      key={rec.id}
+                      onClick={() => selectRecommendation(rec)}
+                      className="p-4 cursor-pointer hover:bg-slate-50 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-200/60 hover:shadow-sm"
+                    >
+                      <p className="font-semibold text-slate-800 mb-1">{rec.title}</p>
+                      <p className="text-sm text-slate-600 line-clamp-2">{rec.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="relative">
+              <textarea
+                value={currentPrompt}
+                onChange={(e) => {
+                  setCurrentPrompt(e.target.value)
+                  getRecommendations(e.target.value)
+                }}
+                onKeyDown={handleKeyDown}
+                className="w-full p-6 pr-32 border-2 border-slate-200/60 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-300 transition-all duration-200 resize-none bg-white/80 backdrop-blur-sm text-slate-700 placeholder-slate-400 shadow-sm"
+                placeholder="Type your message here... Press Enter to send or Shift+Enter for new line"
+                rows={3}
+              />
+              <div className="absolute bottom-4 right-4 flex items-center space-x-3">
+                <button
+                  onClick={saveCurrentPrompt}
+                  className="p-3 bg-slate-100 text-slate-600 font-semibold rounded-xl hover:bg-slate-200 hover:text-slate-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                  title="Save current prompt to library"
+                >
+                  <Save className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={sendPrompt}
+                  disabled={!currentPrompt.trim() || isAiTyping}
+                  className="p-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
+                  title="Send prompt"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

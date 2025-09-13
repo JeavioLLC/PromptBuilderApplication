@@ -18,8 +18,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-semibold text-gray-800">Dashboard</h2>
+    <div className="flex-1 overflow-y-auto px-6 py-8">
+      <h2 className="text-3xl font-semibold text-gray-800 mb-6">Dashboard</h2>
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -72,8 +72,8 @@ export default function PromptFormPage() {
   const isSubmitting = createMutation.isPending || updateMutation.isPending
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-3xl font-semibold text-gray-800">
+    <div className="flex-1 overflow-y-auto px-6 py-8">
+      <h2 className="text-3xl font-semibold text-gray-800 mb-6">
         {id ? 'Edit Prompt' : 'Create New Prompt'}
       </h2>
       
