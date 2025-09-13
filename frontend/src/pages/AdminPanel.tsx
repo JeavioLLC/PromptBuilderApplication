@@ -23,6 +23,8 @@ const AdminPanel: React.FC = () => {
   ]);
   const [deleteUser, setDeleteUser] = useState<null | { name: string; email: string; role: string }>(null);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isAddRequestTagModalOpen, setAddRequestTagModalOpen] = useState(false);
+  const [newRequestTagName, setNewRequestTagName] = useState('');
   const navigate = useNavigate();
 
   const handleDelete = (user: { name: string; email: string; role: string }) => {
@@ -169,7 +171,7 @@ const AdminPanel: React.FC = () => {
                 <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: 24, maxWidth: 480 }}>
                   <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     Tag Categories
-                    <span style={{ color: '#2563eb', fontSize: 26, cursor: 'pointer', fontWeight: 400 }}>+</span>
+                    <span style={{ color: '#2563eb', fontSize: 26, cursor: 'pointer', fontWeight: 400 }} onClick={() => setAddRequestTagModalOpen(true)}>+</span>
                   </div>
                   {requestTags.map((tag, idx) => (
                     <div key={tag.name} style={{ display: 'flex', alignItems: 'center', background: '#f9fafb', borderRadius: 8, padding: '14px 18px', marginBottom: 12 }}>
@@ -181,6 +183,50 @@ const AdminPanel: React.FC = () => {
                     </div>
                   ))}
                 </div>
+                <Modal
+                  isOpen={isAddRequestTagModalOpen}
+                  onClose={() => setAddRequestTagModalOpen(false)}
+                  title="Add New Request Tag Category"
+                  maxWidth="420px"
+                >
+                  <form
+                    onSubmit={e => {
+                      e.preventDefault();
+                      if (newRequestTagName.trim()) {
+                        setRequestTags([...requestTags, { name: newRequestTagName.trim(), status: 'Active', mandatory: false }]);
+                        setNewRequestTagName('');
+                        setAddRequestTagModalOpen(false);
+                      }
+                    }}
+                  >
+                    <div style={{ marginBottom: 28 }}>
+                      <label style={{ display: 'block', fontWeight: 600, color: '#374151', marginBottom: 10, fontSize: 18 }}>Category Name</label>
+                      <input
+                        type="text"
+                        value={newRequestTagName}
+                        onChange={e => setNewRequestTagName(e.target.value)}
+                        style={{ width: '100%', border: '1.5px solid #e5e7eb', borderRadius: 8, padding: '14px 16px', fontSize: 18, background: '#fff', color: '#222' }}
+                        autoFocus
+                        required
+                      />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
+                      <button
+                        type="button"
+                        onClick={() => setAddRequestTagModalOpen(false)}
+                        style={{ padding: '12px 32px', borderRadius: 8, border: '1.5px solid #e5e7eb', background: '#f3f4f6', color: '#374151', fontWeight: 600, fontSize: 17 }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        style={{ padding: '12px 32px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 17 }}
+                      >
+                        Add Category
+                      </button>
+                    </div>
+                  </form>
+                </Modal>
               </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 4 }}>Discovery Prompt Tags</div>
