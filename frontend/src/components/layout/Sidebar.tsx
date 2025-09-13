@@ -13,7 +13,7 @@ const navItems: NavItem[] = [
   { path: '/dashboard', label: 'Home', icon: Home },
   { path: '/prompts', label: 'Prompt Library', icon: BookOpen },
   { path: '/contributions', label: 'My Contributions', icon: UserCheck },
-  { path: '/admin', label: 'Admin Panel', icon: Shield },
+  { path: '/profile', label: 'Admin', icon: Shield },
 ]
 
 const Sidebar: React.FC = () => {

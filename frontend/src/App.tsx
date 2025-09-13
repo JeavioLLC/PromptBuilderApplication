@@ -1,26 +1,22 @@
-import React from 'react'
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
-import AppLayout from './components/layout/AppLayout'
-import LoginPage from './pages/LoginPage'
-import SignupPage from './pages/SignupPage'
-import DashboardPage from './pages/DashboardPage'
-import ChatHome from './pages/ChatHome'
-import PromptLibrary from './pages/PromptLibrary'
-import CreatePrompt from './pages/CreatePrompt'
-import MyContributions from './pages/MyContributions'
-      <Route path="/contributions" element={
-        <ProtectedRoute>
-          <AppLayout>
-            <MyContributions />
-          </AppLayout>
-        </ProtectedRoute>
-      } />
+import React from 'react';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import AppLayout from './components/layout/AppLayout';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import DashboardPage from './pages/DashboardPage';
+import ChatHome from './pages/ChatHome';
+import PromptLibrary from './pages/PromptLibrary';
+import CreatePrompt from './pages/CreatePrompt';
+import MyContributions from './pages/MyContributions';
+import AdminPanel from './pages/AdminPanel';
+import AddUser from './pages/AddUser';
+import Profile from './pages/Profile';
+
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth()
-
+  const { user, loading } = useAuth();
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-secondary">
@@ -29,16 +25,14 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
           <p className="loading-text">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
-
-  return user ? <>{children}</> : <Navigate to="/login" replace />
-}
+  return user ? <>{children}</> : <Navigate to="/login" replace />;
+};
 
 // Public Route Component (redirect to dashboard if already logged in)
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth()
-
+  const { user, loading } = useAuth();
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-secondary">
@@ -47,11 +41,10 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <p className="loading-text">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
-
-  return user ? <Navigate to="/dashboard" replace /> : <>{children}</>
-}
+  return user ? <Navigate to="/dashboard" replace /> : <>{children}</>;
+};
 
 // App Routes Component
 const AppRoutes: React.FC = () => {
@@ -64,8 +57,32 @@ const AppRoutes: React.FC = () => {
         </PublicRoute>
       } />
 
-      {/* My Contributions Route */}
+      {/* Add User Route */}
+      <Route path="/admin/add-user" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <AddUser />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
 
+      {/* Admin Panel Route */}
+      <Route path="/admin" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <AdminPanel />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* My Contributions Route */}
+      <Route path="/contributions" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <MyContributions />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
 
       {/* Create Prompt Route */}
       <Route path="/prompts/create" element={
@@ -84,6 +101,7 @@ const AppRoutes: React.FC = () => {
           </AppLayout>
         </ProtectedRoute>
       } />
+
       <Route path="/signup" element={
         <PublicRoute>
           <SignupPage />
@@ -107,7 +125,7 @@ const AppRoutes: React.FC = () => {
           </AppLayout>
         </ProtectedRoute>
       } />
-      
+
       <Route path="/settings" element={
         <ProtectedRoute>
           <AppLayout>
@@ -127,7 +145,7 @@ const AppRoutes: React.FC = () => {
           </AppLayout>
         </ProtectedRoute>
       } />
-      
+
       <Route path="/help" element={
         <ProtectedRoute>
           <AppLayout>
@@ -148,11 +166,20 @@ const AppRoutes: React.FC = () => {
         </ProtectedRoute>
       } />
 
+      {/* Profile Page */}
+      <Route path="/profile" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <Profile />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+
       {/* Default redirect */}
-  <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-  )
-}
+  );
+};
 
 // Main App Component
 export default function App() {
@@ -162,5 +189,5 @@ export default function App() {
         <AppRoutes />
       </AuthProvider>
     </BrowserRouter>
-  )
+  );
 }
