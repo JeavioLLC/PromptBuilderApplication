@@ -1,12 +1,28 @@
 """
 Prompts API endpoints
 """
+
 from flask import Blueprint, request, jsonify
 from models import db, Prompt
 from models.prompt import Prompt as PromptModel
 from models.category import Category as CategoryModel
+from api.gemini_llm import generate_prompt
 
 prompts_bp = Blueprint('prompts', __name__, url_prefix='/api/prompts')
+
+@prompts_bp.route('/generate', methods=['POST'])
+def generate_prompt_api():
+    """Generate a prompt using the LLM (Gemini)"""
+    try:
+        data = request.get_json() or {}
+        user_context = data.get('user_context')
+        user_info = data.get('user_info')
+        if not user_context:
+            return jsonify({'error': 'user_context is required'}), 400
+        prompt = generate_prompt(user_context, user_info)
+        return jsonify({'generated_prompt': prompt})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @prompts_bp.route('', methods=['GET'])
 def get_prompts():

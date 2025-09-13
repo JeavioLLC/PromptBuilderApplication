@@ -25,10 +25,19 @@ def generate_prompt(user_context: str, user_info: dict = None) -> str:
         ]
     }
     params = {"key": GEMINI_API_KEY}
-    response = requests.post(GEMINI_API_URL, headers=headers, params=params, json=data, timeout=30)
-    response.raise_for_status()
-    result = response.json()
     try:
+        response = requests.post(GEMINI_API_URL, headers=headers, params=params, json=data, timeout=30)
+        response.raise_for_status()
+        result = response.json()
         return result["candidates"][0]["content"]["parts"][0]["text"]
-    except Exception:
-        return "[Error: Could not generate prompt]"
+    except Exception as e:
+        # Log the error details for debugging
+        import traceback
+        print("[Gemini LLM Error]", str(e))
+        print(traceback.format_exc())
+        if hasattr(e, 'response') and e.response is not None:
+            try:
+                print("[Gemini LLM Response]", e.response.text)
+            except Exception:
+                pass
+        return f"[Error: Could not generate prompt: {str(e)}]"

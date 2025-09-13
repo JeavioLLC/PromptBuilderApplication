@@ -1,5 +1,7 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 interface Message {
 	id: number;
@@ -34,14 +36,29 @@ const ChatHome: React.FC = () => {
 		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 	}, [messages]);
 
-	const handleSend = () => {
+
+	const handleSend = async () => {
 		if (!input.trim()) return;
-		setMessages(prev => [
-			...prev,
-			{ id: prev.length + 1, sender: 'user', text: input }
-		]);
+		const userMessage: Message = { id: messages.length + 1, sender: 'user', text: input };
+		setMessages(prev => [...prev, userMessage]);
 		setInput('');
-		// Here you can add logic to get assistant response
+
+		try {
+			// Call backend LLM API
+			const res = await axios.post('/api/prompts/generate', {
+				user_context: input
+			});
+			const llmText = res.data.generated_prompt || '[No response]';
+			setMessages(prev => [
+				...prev,
+				{ id: prev.length + 1, sender: 'assistant' as const, text: llmText }
+			]);
+		} catch (err) {
+			setMessages(prev => [
+				...prev,
+				{ id: prev.length + 1, sender: 'assistant' as const, text: '[Error: Could not get response from LLM]' }
+			]);
+		}
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
