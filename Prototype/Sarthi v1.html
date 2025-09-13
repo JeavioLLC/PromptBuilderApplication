@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarthi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .nav-item.active {
+            background-color: #e5e7eb;
+            color: #111827;
+            font-weight: 600;
+        }
+        [x-cloak] { display: none !important; }
+        .prose { max-width: 65ch; }
+        .prose pre {
+            background-color: #1f2937;
+            color: #d1d5db;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+        .prose code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .tag-list-item.selected {
+            background-color: #dbeafe;
+            border-color: #93c5fd;
+        }
+    </style>
+</head>
+<body class="text-gray-800" x-data="promptApp()">
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar -->
+        <aside class="w-64 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col">
+            <div class="h-16 flex items-center justify-center border-b border-gray-200">
+                <h1 class="text-2xl font-bold text-gray-800">Sarathi</h1>
+            </div>
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <a @click.prevent="setActiveView('home')" href="#" class="nav-item flex items-center px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-200" :class="{ 'active': activeView === 'home' }">
+                    <i data-lucide="home" class="w-5 h-5 mr-3"></i> Home
+                </a>
+                <a @click.prevent="setActiveView('library')" href="#" class="nav-item flex items-center px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-200" :class="{ 'active': activeView === 'library' }">
+                    <i data-lucide="library" class="w-5 h-5 mr-3"></i> Prompt Library
+                </a>
+                <a @click.prevent="setActiveView('my-contributions')" href="#" class="nav-item flex items-center px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-200" :class="{ 'active': activeView === 'my-contributions' }">
+                    <i data-lucide="user-check" class="w-5 h-5 mr-3"></i> My Contributions
+                </a>
+                 <a @click.prevent="setActiveView('admin')" href="#" class="nav-item flex items-center px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-200" :class="{ 'active': activeView === 'admin' }" x-show="currentUser.role === 'Admin'">
+                    <i data-lucide="shield" class="w-5 h-5 mr-3"></i> Admin Panel
+                </a>
+            </nav>
+            <div class="px-4 py-4 border-t border-gray-200">
+                 <button @click="setActiveView('people')" class="flex items-center w-full text-left p-2 rounded-lg hover:bg-gray-100">
+                    <img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/100x100/E2E8F0/4A5568?text=U" alt="User avatar">
+                    <div class="ml-3">
+                        <p class="text-sm font-semibold text-gray-800" x-text="currentUser.displayName"></p>
+                        <p class="text-xs text-gray-500" x-text="currentUser.role"></p>
+                    </div>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col">
+            <!-- Home / Chat Interface -->
+            <div x-show="activeView === 'home'" x-cloak class="h-full flex flex-col">
+                <!-- Chat History -->
+                <div id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <!-- Initial Welcome Message -->
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">S</div>
+                        <div>
+                            <p class="font-semibold">Sarathi Assistant</p>
+                            <div class="bg-white p-4 rounded-lg shadow-sm mt-1 prose">
+                                <p>Welcome to Sarathi! How can I help you today? Start typing a prompt, or I can suggest some from the library based on what you type.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat History Loop -->
+                    <template x-for="(message, index) in chatHistory" :key="index">
+                        <div class="flex items-start gap-4 w-full">
+                            <!-- AI MESSAGE -->
+                            <template x-if="message.role === 'ai'">
+                                <div class="flex items-start gap-4">
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">S</div>
+                                    <div>
+                                        <p class="font-semibold">Sarathi Assistant</p>
+                                        <div class="bg-white p-4 rounded-lg shadow-sm mt-1 prose" x-html="message.html"></div>
+                                        <!-- VOTE BUTTONS for AI messages -->
+                                        <div class="flex items-center space-x-2 mt-2">
+                                            <button @click="rateMessage(index, 'upvoted')" class="p-1 rounded-md hover:bg-gray-200 transition-colors" :class="{ 'text-blue-600 bg-blue-100': message.feedback === 'upvoted' }">
+                                                <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+                                            </button>
+                                            <button @click="rateMessage(index, 'downvoted')" class="p-1 rounded-md hover:bg-gray-200 transition-colors" :class="{ 'text-red-600 bg-red-100': message.feedback === 'downvoted' }">
+                                                <i data-lucide="thumbs-down" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+            
+                            <!-- USER MESSAGE -->
+                            <template x-if="message.role === 'user'">
+                                <div class="flex items-end gap-2 ml-auto max-w-[80%]">
+                                    <!-- Message Bubble -->
+                                    <div class="text-right order-1">
+                                        <p class="font-semibold" x-text="currentUser.displayName"></p>
+                                        <div class="bg-blue-50 p-4 rounded-lg shadow-sm mt-1 inline-block text-left prose" x-html="message.html">
+                                        </div>
+                                    </div>
+                                    <!-- Three dots menu -->
+                                    <div x-data="{ open: false }" class="relative flex-shrink-0 order-2">
+                                        <button @click="open = !open" class="p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded-full">
+                                            <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                        </button>
+                                        <div x-show="open" @click.away="open = false" x-transition class="absolute bottom-full right-0 mb-1 w-48 bg-white border rounded-lg shadow-lg z-20 text-left" x-cloak>
+                                            <a href="#" @click.prevent="savePromptFromHistory(message); open = false" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+                                                Save as New Prompt
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <!-- User Avatar -->
+                                    <div class="flex-shrink-0 order-3">
+                                        <img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/100x100/E2E8F0/4A5568?text=U" alt="User avatar">
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <!-- AI Typing Indicator -->
+                     <div x-show="isAiTyping" class="flex items-start gap-4">
+                         <div class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">S</div>
+                         <div class="bg-white p-4 rounded-lg shadow-sm mt-1">
+                            <div class="flex items-center space-x-1">
+                                <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0s;"></div>
+                                <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+                                <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.4s;"></div>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+
+                <!-- Prompt Input Area -->
+                <div class="px-6 py-4 bg-white/70 backdrop-blur-sm border-t border-gray-200">
+                    <div class="relative">
+                        <!-- Recommendations Dropdown -->
+                        <div x-show="recommendations.length > 0" x-transition class="absolute bottom-full left-0 right-0 mb-2 z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto" x-cloak>
+                            <p class="text-xs font-semibold text-gray-500 p-2 border-b">RECOMMENDATIONS</p>
+                            <ul>
+                                <template x-for="rec in recommendations" :key="rec.id">
+                                    <li @click="selectRecommendationForChat(rec)" class="px-4 py-3 cursor-pointer hover:bg-gray-100 border-b last:border-b-0">
+                                        <p class="font-semibold text-gray-800" x-text="rec.title"></p>
+                                        <p class="text-sm text-gray-500 truncate" x-text="rec.promptText"></p>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+
+                        <textarea x-model="currentPrompt" @input.debounce.300ms="getRecommendations($event.target.value)" @keydown.enter.exact.prevent="sendPrompt()" class="w-full p-4 pr-32 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none" placeholder="Enter your prompt here..." rows="2"></textarea>
+                        <div class="absolute bottom-3 right-3 flex items-center space-x-2">
+                             <button @click="startNewPromptCreationFromChat()" class="p-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition" title="Save or refine current prompt in library">
+                                <i data-lucide="save" class="w-5 h-5"></i>
+                            </button>
+                            <button @click="sendPrompt()" class="p-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-sm disabled:bg-blue-300" :disabled="!currentPrompt.trim() || isAiTyping" title="Send prompt">
+                                <i data-lucide="send" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto px-6 py-8" x-show="activeView !== 'home'">
+                <!-- People Page (Profile + User List) -->
+                <div x-show="activeView === 'people'" x-cloak>
+                    <h2 class="text-3xl font-semibold text-gray-800 mb-6">People</h2>
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <div class="border-b border-gray-200">
+                            <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+                                <a href="#" @click.prevent="peopleTab = 'profile'" :class="{ 'border-blue-500 text-blue-600': peopleTab === 'profile', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': peopleTab !== 'profile' }" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    My Profile
+                                </a>
+                                <a href="#" @click.prevent="peopleTab = 'users'" :class="{ 'border-blue-500 text-blue-600': peopleTab === 'users', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': peopleTab !== 'users' }" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    All Users
+                                </a>
+                            </nav>
+                        </div>
+
+                        <div x-show="peopleTab === 'profile'" class="p-6">
+                            <div class="max-w-2xl mx-auto">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label for="profileFirstName" class="block text-sm font-medium text-gray-700">First Name</label>
+                                        <input type="text" id="profileFirstName" x-model="currentUser.firstName" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label for="profileLastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+                                        <input type="text" id="profileLastName" x-model="currentUser.lastName" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="profileEmail" class="block text-sm font-medium text-gray-700">Email ID</label>
+                                        <input type="email" id="profileEmail" x-model="currentUser.email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Role Type</label>
+                                        <p class="mt-1 block w-full bg-gray-100 border border-gray-300 rounded-md shadow-sm py-2 px-3" x-text="currentUser.role"></p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-6">
+                                    <h3 class="text-lg font-medium text-gray-800 mb-2">My Preferred Discovery Tags</h3>
+                                    <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                        <template x-for="category in discoveryTagCategories.filter(c => c.active)" :key="category.id">
+                                            <div>
+                                                <label :for="'profile-tag-'+category.id" class="block text-sm font-medium text-gray-700" x-text="category.name"></label>
+                                                <select :id="'profile-tag-'+category.id" x-model="currentUser.preferredTags[category.id]" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                                    <option value="">-- No preference --</option>
+                                                    <template x-for="tagValue in category.values" :key="tagValue.id">
+                                                        <option :value="tagValue.id" x-text="tagValue.name"></option>
+                                                    </template>
+                                                </select>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="mt-6 flex justify-end space-x-3">
+                                    <button @click="setActiveView('home')" class="px-5 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                                    <button @click="alert('Profile Saved!')" class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div x-show="peopleTab === 'users'" class="p-6">
+                             <div class="flex justify-end mb-4" x-show="currentUser.role === 'Admin'">
+                                <button @click="startNewUserCreation()" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                    <span>Add New User</span>
+                                </button>
+                            </div>
+                             <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                        <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <template x-for="user in users" :key="user.id">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="user.displayName"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="user.email"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="user.role"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4" x-show="currentUser.role === 'Admin'">
+                                            <button @click="editUser(user)" class="text-blue-600 hover:text-blue-900">Edit</button>
+                                            <button :disabled="user.id === currentUser.id" class="text-red-600 hover:text-red-900 disabled:text-gray-400">Delete</button>
+                                        </td>
+                                    </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Create/Edit User Page (Admin) -->
+                <div x-show="activeView === 'create-edit-user'" x-cloak>
+                    <h2 class="text-3xl font-semibold text-gray-800 mb-6" x-text="editingUser.id ? 'Edit User' : 'Add New User'"></h2>
+                     <div class="bg-white p-6 rounded-lg shadow-sm max-w-2xl mx-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div>
+                                <label for="userFirstName" class="block text-sm font-medium text-gray-700">First Name</label>
+                                <input type="text" id="userFirstName" x-model="editingUser.firstName" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="userLastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+                                <input type="text" id="userLastName" x-model="editingUser.lastName" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                             <div class="md:col-span-2">
+                                <label for="userEmail" class="block text-sm font-medium text-gray-700">Email ID</label>
+                                <input type="email" id="userEmail" x-model="editingUser.email" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="userRole" class="block text-sm font-medium text-gray-700">Role Type</label>
+                                <select id="userRole" x-model="editingUser.role" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                    <option>User</option>
+                                    <option>Admin</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="text-lg font-medium text-gray-800 mb-2">Preferred Discovery Tags</h3>
+                             <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                <template x-for="category in discoveryTagCategories.filter(c => c.active)" :key="category.id">
+                                    <div>
+                                        <label :for="'user-tag-'+category.id" class="block text-sm font-medium text-gray-700" x-text="category.name"></label>
+                                        <select :id="'user-tag-'+category.id" x-model="editingUser.preferredTags[category.id]" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                            <option value="">-- No preference --</option>
+                                            <template x-for="tagValue in category.values" :key="tagValue.id">
+                                                <option :value="tagValue.id" x-text="tagValue.name"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button @click="setActiveView('people'); peopleTab='users'" class="px-5 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                            <button @click="saveUser()" class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Save User</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prompt Creation/Editing Page -->
+                <div x-show="activeView === 'create-edit'" x-cloak>
+                    <h2 class="text-3xl font-semibold text-gray-800 mb-6" x-text="editingPrompt.id ? 'Edit Prompt' : 'Create New Prompt'"></h2>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                         <div class="p-4 border border-blue-100 bg-blue-50 rounded-lg mb-6">
+                            <h3 class="text-lg font-semibold text-blue-800 mb-2">AI-Assisted Generation</h3>
+                            <p class="text-sm text-blue-700 mb-4">Select request tags and provide context to help the AI generate a high-quality draft.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <template x-for="category in requestTagCategories.filter(c => c.active)" :key="category.id">
+                                    <div>
+                                        <label :for="'req-cat-'+category.id" class="block text-sm font-medium text-gray-700">
+                                            <span x-text="category.name"></span>
+                                            <span x-show="category.mandatory" class="text-red-500" title="This category is mandatory">*</span>
+                                        </label>
+                                        <select :id="'req-cat-'+category.id" x-model="aiAssist.tags[category.id]" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                            <option value="">-- Select a value --</option>
+                                            <template x-for="value in category.values" :key="value.id">
+                                                <option :value="value.name" x-text="value.name"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </template>
+                                <div class="md:col-span-2">
+                                    <label for="aiGenContext" class="block text-sm font-medium text-gray-700">Use Case / Context</label>
+                                    <textarea id="aiGenContext" x-model="aiAssist.context" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Provide any additional context or describe the specific use case for the prompt..."></textarea>
+                                </div>
+                            </div>
+                             <div class="mt-4">
+                                <button @click="generateAIDraft()" :disabled="generatingDraft" class="px-5 py-2 text-sm bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition disabled:bg-blue-300">
+                                    <span x-show="!generatingDraft">Generate Draft</span>
+                                    <span x-show="generatingDraft">
+                                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Generating...
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="promptTitle" class="block text-sm font-medium text-gray-700">Prompt Title</label>
+                            <input type="text" id="promptTitle" x-model="editingPrompt.title" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                             <p x-show="titleExistsError" class="text-sm text-red-600 mt-1">A prompt with this title already exists. Please choose a unique title.</p>
+                        </div>
+                        <div class="mt-4">
+                            <label for="promptText" class="block text-sm font-medium text-gray-700">Prompt Text</label>
+                            <textarea id="promptText" rows="8" x-model="editingPrompt.promptText" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Type</label>
+                                <select x-model="editingPrompt.isPublic" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                    <option :value="false">Private</option>
+                                    <option :value="true">Public</option>
+                                </select>
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-700">Target LLM</label>
+                                <select x-model="editingPrompt.targetLLM" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                     <template x-for="llm in llms" :key="llm.name">
+                                        <option :value="llm.name" x-text="llm.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="text-lg font-medium text-gray-800 mb-2">Discovery Tags</h3>
+                            <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                <template x-for="category in discoveryTagCategories.filter(c => c.active)" :key="category.id">
+                                    <div>
+                                        <label :for="'cat-'+category.id" class="block text-sm font-medium text-gray-700">
+                                            <span x-text="category.name"></span>
+                                            <span x-show="category.mandatory" class="text-red-500" title="This category is mandatory">*</span>
+                                        </label>
+                                        <select :id="'cat-'+category.id" x-model="editingPrompt.selectedTags[category.id]" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                                            <option value="">-- Select a value --</option>
+                                            <template x-for="tagValue in category.values" :key="tagValue.id">
+                                                <option :value="tagValue.id" x-text="tagValue.name"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+
+                        <div x-show="editingPrompt.id" class="mt-6">
+                             <label for="versionNote" class="block text-sm font-medium text-gray-700">Version Note</label>
+                             <input type="text" id="versionNote" placeholder="e.g., 'Improved clarity and added an example.'" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                             <p class="text-xs text-gray-500 mt-1">Explain your changes. This is mandatory when improving a prompt.</p>
+                        </div>
+
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button @click="setActiveView('library')" class="px-5 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                            <button @click="savePrompt()" class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Save Prompt</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prompt Library -->
+                <div x-show="activeView === 'library'" x-cloak>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-3xl font-semibold text-gray-800">Prompt Library</h2>
+                        <button @click="startNewPromptCreation()" class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center space-x-2">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                            <span>Add New Prompt</span>
+                        </button>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                         <div class="flex flex-col md:flex-row gap-4 mb-6">
+                            <div class="relative flex-grow">
+                                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                                <input type="text" x-model="searchQuery" placeholder="Search by title or content..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <select class="w-full md:w-48 h-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option>Filter by Tag</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <template x-for="prompt in filteredPrompts" :key="prompt.id">
+                                <div class="border border-gray-200 p-4 rounded-lg flex justify-between items-center hover:shadow-md transition-shadow">
+                                    <div>
+                                        <h4 @click="viewPromptDetail(prompt)" class="font-semibold text-lg text-blue-600 hover:underline cursor-pointer" x-text="prompt.title"></h4>
+                                        <p class="text-sm text-gray-600 truncate max-w-lg" x-text="prompt.promptText"></p>
+                                        <div class="mt-2 flex items-center space-x-4 text-xs text-gray-500">
+                                            <span>By <strong x-text="findUser(prompt.ownerId).displayName"></strong></span>
+                                            <span class="flex items-center"><i data-lucide="thumbs-up" class="w-3 h-3 mr-1"></i> <span x-text="prompt.upvotes"></span></span>
+                                            <span class="flex items-center"><i data-lucide="eye" class="w-3 h-3 mr-1"></i> <span x-text="prompt.usageCount"></span></span>
+                                            <span x-show="!prompt.isPublic" class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded-full">Private</span>
+                                            <span x-show="prompt.status === 'NEEDS_VALIDATION'" class="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full">Needs Validation</span>
+                                        </div>
+                                    </div>
+                                    <button @click="usePromptFromLibrary(prompt)" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition text-sm">Use This Prompt</button>
+                                </div>
+                            </template>
+                             <div x-show="filteredPrompts.length === 0" class="text-center py-8 text-gray-500">
+                                <i data-lucide="search-x" class="w-10 h-10 mx-auto mb-2"></i>
+                                <p>No prompts found matching your search.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prompt Detail Page -->
+                <div x-show="activeView === 'detail' && selectedPrompt" x-cloak>
+                    <button @click="setActiveView('library')" class="flex items-center text-sm text-blue-600 hover:underline mb-4">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-1"></i> Back to Library
+                    </button>
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <div class="p-6 border-b border-gray-200">
+                             <div class="flex justify-between items-start">
+                                <div>
+                                    <h2 class="text-3xl font-bold text-gray-800" x-text="selectedPrompt.title"></h2>
+                                     <div class="mt-2 flex items-center space-x-6 text-sm text-gray-500">
+                                        <span>Owner: <strong x-text="findUser(selectedPrompt.ownerId).displayName"></strong></span>
+                                        <span>Created: <strong x-text="new Date(selectedPrompt.createdAt).toLocaleDateString()"></strong></span>
+                                        <span>Updated: <strong x-text="new Date(selectedPrompt.updatedAt).toLocaleDateString()"></strong></span>
+                                        <span x-show="selectedPrompt.status === 'NEEDS_VALIDATION'" class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">Needs Validation</span>
+                                        <span x-show="selectedPrompt.status === 'ARCHIVED'" class="px-2 py-1 bg-gray-200 text-gray-800 rounded-full text-xs font-semibold">Archived</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <button class="flex items-center space-x-2 px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
+                                        <i data-lucide="thumbs-up" class="w-5 h-5 text-gray-600"></i>
+                                        <span x-text="selectedPrompt.upvotes"></span>
+                                    </button>
+                                     <button class="flex items-center space-x-2 px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
+                                        <i data-lucide="thumbs-down" class="w-5 h-5 text-gray-600"></i>
+                                        <span x-text="selectedPrompt.downvotes"></span>
+                                    </button>
+                                </div>
+                            </div>
+                             <div class="mt-4 flex space-x-2">
+                                <button @click="editPrompt(selectedPrompt)" class="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Edit</button>
+                                <button class="px-5 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition">Improve</button>
+                                <button class="px-5 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition">Archive</button>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="border-b border-gray-200">
+                                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                    <a href="#" @click.prevent="detailTab = 'prompt'" :class="{ 'border-blue-500 text-blue-600': detailTab === 'prompt', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': detailTab !== 'prompt' }" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                        Prompt Text
+                                    </a>
+                                    <a href="#" @click.prevent="detailTab = 'history'" :class="{ 'border-blue-500 text-blue-600': detailTab === 'history', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': detailTab !== 'history' }" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                        Version History
+                                    </a>
+                                </nav>
+                            </div>
+
+                            <div x-show="detailTab === 'prompt'" class="mt-6">
+                                 <div class="prose max-w-none p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                    <pre><code x-text="selectedPrompt.promptText"></code></pre>
+                                </div>
+                            </div>
+                             <div x-show="detailTab === 'history'" class="mt-6 space-y-4" x-cloak>
+                                <template x-for="version in selectedPrompt.versionHistory.slice().reverse()" :key="version.versionNumber">
+                                <div class="border border-gray-200 p-4 rounded-lg">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <p class="font-semibold">Version <span x-text="version.versionNumber"></span></p>
+                                        <p class="text-sm text-gray-500">
+                                            By <strong x-text="findUser(version.authorId).displayName"></strong> on <span x-text="new Date(version.timestamp).toLocaleString()"></span>
+                                        </p>
+                                    </div>
+                                    <p class="text-sm text-gray-600 italic mb-2 p-2 bg-gray-50 rounded">Note: "<span x-text="version.note"></span>"</p>
+                                    <details>
+                                        <summary class="cursor-pointer text-sm text-blue-600">Show prompt text</summary>
+                                        <div class="mt-2 prose max-w-none p-2 bg-gray-50 rounded-lg border text-sm">
+                                            <pre><code x-text="version.promptText"></code></pre>
+                                        </div>
+                                    </details>
+                                </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                 <!-- My Contributions Page -->
+                <div x-show="activeView === 'my-contributions'" x-cloak>
+                    <h2 class="text-3xl font-semibold text-gray-800 mb-6">My Contributions</h2>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-semibold">Your Prompts</h3>
+                            <select class="border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option>Lifetime</option>
+                                <option>Last 30 Days</option>
+                                <option>This Quarter</option>
+                            </select>
+                        </div>
+                        <div class="space-y-4">
+                             <template x-for="prompt in prompts.filter(p => p.ownerId === currentUser.id)" :key="prompt.id">
+                                <div class="border border-gray-200 p-4 rounded-lg flex justify-between items-center">
+                                    <div>
+                                        <h4 @click="viewPromptDetail(prompt)" class="font-semibold text-lg text-blue-600 hover:underline cursor-pointer" x-text="prompt.title"></h4>
+                                        <div class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+                                            <span class="flex items-center"><i data-lucide="thumbs-up" class="w-4 h-4 mr-1"></i> Upvotes: <strong x-text="prompt.upvotes"></strong></span>
+                                            <span class="flex items-center"><i data-lucide="eye" class="w-4 h-4 mr-1"></i> Usage Count: <strong x-text="prompt.usageCount"></strong></span>
+                                        </div>
+                                    </div>
+                                    <span class="text-sm font-medium" :class="{ 'text-green-600': prompt.status === 'ACTIVE', 'text-yellow-600': prompt.status === 'NEEDS_VALIDATION', 'text-gray-600': prompt.status === 'ARCHIVED' }" x-text="prompt.status"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Panel -->
+                <div x-show="activeView === 'admin'" x-cloak>
+                    <h2 class="text-3xl font-semibold text-gray-800 mb-6">Admin Panel</h2>
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <div class="border-b border-gray-200">
+                            <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+                                <a href="#" @click.prevent="adminTab = 'llms'" :class="{ 'border-blue-500 text-blue-600': adminTab === 'llms', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': adminTab !== 'llms' }" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    LLM Management
+                                </a>
+                                <a href="#" @click.prevent="adminTab = 'tags'" :class="{ 'border-blue-500 text-blue-600': adminTab === 'tags', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': adminTab !== 'tags' }" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                                    Tag Management
+                                </a>
+                            </nav>
+                        </div>
+
+                        <div x-show="adminTab === 'llms'" class="p-6">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LLM Version</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fallback LLM</th>
+                                        <th class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <template x-for="llm in llms" :key="llm.name">
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="llm.name"></td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="llm.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" x-text="llm.status"></span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                <select x-model="llm.fallback" class="border-gray-300 rounded-md shadow-sm">
+                                                    <option value="">None</option>
+                                                    <template x-for="fallbackLlm in llms.filter(l => l.name !== llm.name)" :key="fallbackLlm.name">
+                                                        <option :value="fallbackLlm.name" x-text="fallbackLlm.name"></option>
+                                                    </template>
+                                                </select>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <button @click="llm.status = llm.status === 'Active' ? 'Discontinued' : 'Active'" class="text-blue-600 hover:text-blue-900" x-text="llm.status === 'Active' ? 'Discontinue' : 'Reactivate'"></button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div x-show="adminTab === 'tags'" class="p-6">
+                           <div class="space-y-10">
+                                <!-- Request Prompt Tags Section -->
+                                <div>
+                                    <div class="mb-4">
+                                        <h3 class="text-xl font-semibold text-gray-800">Request Prompt Tags</h3>
+                                        <p class="text-sm text-gray-600 mt-1">These temporary tags guide the AI during initial prompt generation and are not saved with the prompt.</p>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div class="md:col-span-1 bg-gray-50 p-4 rounded-lg border">
+                                            <div class="flex justify-between items-center mb-4">
+                                                <h4 class="text-lg font-semibold text-gray-700">Tag Categories</h4>
+                                                <button @click="openAddCategoryModal('request')" class="p-1 text-blue-600 hover:bg-blue-100 rounded-full" title="Add New Request Category">
+                                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                                </button>
+                                            </div>
+                                            <ul class="space-y-2">
+                                                <template x-for="category in requestTagCategories" :key="category.id">
+                                                    <li @click="selectTagCategory(category, 'request')" class="tag-list-item p-3 border rounded-lg cursor-pointer hover:bg-gray-200 flex justify-between items-start" :class="{ 'selected': selectedTagCategory && selectedTagCategory.id === category.id }">
+                                                        <div class="flex-grow">
+                                                            <p class="font-medium" x-text="category.name"></p>
+                                                            <div class="flex space-x-2 mt-1">
+                                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="category.active ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'" x-text="category.active ? 'Active' : 'Inactive'"></span>
+                                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="category.mandatory ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'" x-text="category.mandatory ? 'Mandatory' : 'Optional'"></span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex flex-col items-end space-y-1 text-right flex-shrink-0 ml-2">
+                                                            <button @click.stop="category.active = !category.active" class="text-xs font-semibold" :class="category.active ? 'text-gray-600' : 'text-green-600'" x-text="category.active ? 'Deactivate' : 'Activate'"></button>
+                                                            <button @click.stop="category.mandatory = !category.mandatory" class="text-xs font-semibold" :class="category.mandatory ? 'text-blue-600' : 'text-gray-600'" x-text="category.mandatory ? 'Make Optional' : 'Make Mandatory'"></button>
+                                                        </div>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                        <!-- Values for Request Tags -->
+                                        <div class="md:col-span-2" x-show="selectedTagCategory && selectedCategoryType === 'request'" x-cloak>
+                                             <div class="flex justify-between items-center mb-4">
+                                                <h4 class="text-lg font-semibold text-gray-700">
+                                                    Values for "<span x-text="selectedTagCategory ? selectedTagCategory.name : ''"></span>"
+                                                </h4>
+                                            </div>
+                                            <div class="bg-white border rounded-lg">
+                                                <table class="min-w-full divide-y divide-gray-200">
+                                                    <thead class="bg-gray-50">
+                                                        <tr>
+                                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value Name</th>
+                                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="bg-white divide-y divide-gray-200">
+                                                        <template x-if="selectedTagCategory">
+                                                            <template x-for="value in selectedTagCategory.values" :key="value.id">
+                                                                <tr>
+                                                                    <template x-if="editingValueId !== value.id">
+                                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="value.name"></td>
+                                                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                                                                            <button @click="startEditValue(value)" class="text-blue-600 hover:text-blue-900">Edit</button>
+                                                                            <button @click="deleteValue(value.id)" class="text-red-600 hover:text-red-900">Delete</button>
+                                                                        </td>
+                                                                    </template>
+                                                                     <template x-if="editingValueId === value.id">
+                                                                        <td class="px-6 py-4 whitespace-nowrap" colspan="2">
+                                                                            <div class="flex items-center space-x-2">
+                                                                                <input type="text" x-model="editingValueName" class="flex-grow border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                                                <button @click="saveEditValue(value)" class="p-2 text-green-600 hover:bg-green-100 rounded-md"><i data-lucide="check" class="w-5 h-5"></i></button>
+                                                                                <button @click="cancelEditValue()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </template>
+                                                                </tr>
+                                                            </template>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                                <div class="p-4 bg-gray-50 border-t">
+                                                    <form @submit.prevent="addTagValue()" class="flex items-center space-x-2">
+                                                        <input type="text" x-model="newTagValueName" placeholder="New value name..." class="flex-grow border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Add Value</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                         <div class="md:col-span-2 flex items-center justify-center text-gray-500" x-show="!selectedTagCategory || selectedCategoryType !== 'request'" x-cloak>
+                                            <p>Select a category to see its values.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Discovery Prompt Tags Section -->
+                                <div>
+                                    <div class="mb-4">
+                                        <h3 class="text-xl font-semibold text-gray-800">Discovery Prompt Tags</h3>
+                                        <p class="text-sm text-gray-600 mt-1">These permanent tags are saved with prompts for searching, filtering, and recommendations.</p>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div class="md:col-span-1 bg-gray-50 p-4 rounded-lg border">
+                                            <div class="flex justify-between items-center mb-4">
+                                                <h4 class="text-lg font-semibold text-gray-700">Tag Categories</h4>
+                                                <button @click="openAddCategoryModal('discovery')" class="p-1 text-blue-600 hover:bg-blue-100 rounded-full" title="Add New Discovery Category">
+                                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                                </button>
+                                            </div>
+                                            <ul class="space-y-2">
+                                                <template x-for="category in discoveryTagCategories" :key="category.id">
+                                                    <li @click="selectTagCategory(category, 'discovery')" class="tag-list-item p-3 border rounded-lg cursor-pointer hover:bg-gray-200 flex justify-between items-start" :class="{ 'selected': selectedTagCategory && selectedTagCategory.id === category.id }">
+                                                        <div class="flex-grow">
+                                                            <p class="font-medium" x-text="category.name"></p>
+                                                            <div class="flex space-x-2 mt-1">
+                                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="category.active ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'" x-text="category.active ? 'Active' : 'Inactive'"></span>
+                                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="category.mandatory ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'" x-text="category.mandatory ? 'Mandatory' : 'Optional'"></span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex flex-col items-end space-y-1 text-right flex-shrink-0 ml-2">
+                                                            <button @click.stop="category.active = !category.active" class="text-xs font-semibold" :class="category.active ? 'text-gray-600' : 'text-green-600'" x-text="category.active ? 'Deactivate' : 'Activate'"></button>
+                                                            <button @click.stop="category.mandatory = !category.mandatory" class="text-xs font-semibold" :class="category.mandatory ? 'text-blue-600' : 'text-gray-600'" x-text="category.mandatory ? 'Make Optional' : 'Make Mandatory'"></button>
+                                                        </div>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                        <!-- Values for Discovery Tags -->
+                                        <div class="md:col-span-2" x-show="selectedTagCategory && selectedCategoryType === 'discovery'" x-cloak>
+                                            <div class="flex justify-between items-center mb-4">
+                                                <h4 class="text-lg font-semibold text-gray-700">
+                                                    Values for "<span x-text="selectedTagCategory ? selectedTagCategory.name : ''"></span>"
+                                                </h4>
+                                            </div>
+                                            <div class="bg-white border rounded-lg">
+                                                <table class="min-w-full divide-y divide-gray-200">
+                                                    <thead class="bg-gray-50">
+                                                        <tr>
+                                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value Name</th>
+                                                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="bg-white divide-y divide-gray-200">
+                                                        <template x-if="selectedTagCategory">
+                                                            <template x-for="value in selectedTagCategory.values" :key="value.id">
+                                                                <tr>
+                                                                    <template x-if="editingValueId !== value.id">
+                                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" x-text="value.name"></td>
+                                                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                                                                            <button @click="startEditValue(value)" class="text-blue-600 hover:text-blue-900">Edit</button>
+                                                                            <button @click="deleteValue(value.id)" class="text-red-600 hover:text-red-900">Delete</button>
+                                                                        </td>
+                                                                    </template>
+                                                                     <template x-if="editingValueId === value.id">
+                                                                        <td class="px-6 py-4 whitespace-nowrap" colspan="2">
+                                                                            <div class="flex items-center space-x-2">
+                                                                                <input type="text" x-model="editingValueName" class="flex-grow border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                                                <button @click="saveEditValue(value)" class="p-2 text-green-600 hover:bg-green-100 rounded-md"><i data-lucide="check" class="w-5 h-5"></i></button>
+                                                                                <button @click="cancelEditValue()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-md"><i data-lucide="x" class="w-5 h-5"></i></button>
+                                                                            </div>
+                                                                        </td>
+                                                                    </template>
+                                                                </tr>
+                                                            </template>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                                <div class="p-4 bg-gray-50 border-t">
+                                                    <form @submit.prevent="addTagValue()" class="flex items-center space-x-2">
+                                                        <input type="text" x-model="newTagValueName" placeholder="New value name..." class="flex-grow border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Add Value</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                         <div class="md:col-span-2 flex items-center justify-center text-gray-500" x-show="!selectedTagCategory || selectedCategoryType !== 'discovery'" x-cloak>
+                                            <p>Select a category to see its values.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div x-show="showAddCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" x-cloak>
+        <div @click.away="showAddCategoryModal = false" class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 class="text-xl font-semibold mb-4" x-text="`Add New ${newCategoryType === 'request' ? 'Request' : 'Discovery'} Tag Category`"></h3>
+            <form @submit.prevent="addCategory()">
+                <div>
+                    <label for="newCategoryName" class="block text-sm font-medium text-gray-700">Category Name</label>
+                    <input type="text" id="newCategoryName" x-model="newCategoryName" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" @click="showAddCategoryModal = false" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Add Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script>
+        // --- IMPORTANT: ADD YOUR GEMINI API KEY HERE ---
+        // You can get a key from Google AI Studio.
+        const apiKey = "AIzaSyAXBYFyJgkfiTv5Vp-oNWVOJ2Mr7GPp-uU"; // <--- PASTE YOUR API KEY BETWEEN THE QUOTES
+
+        function promptApp() {
+            return {
+                activeView: 'home',
+                adminTab: 'tags', 
+                peopleTab: 'profile',
+                detailTab: 'prompt',
+                currentUser: null,
+                users: [],
+                prompts: [],
+                chatHistory: [],
+                currentPrompt: '',
+                isAiTyping: false,
+                llms: [],
+                requestTagCategories: [],
+                discoveryTagCategories: [],
+                selectedTagCategory: null,
+                selectedCategoryType: null, // 'request' or 'discovery'
+                selectedPrompt: null,
+                editingPrompt: {
+                    id: null, title: '', promptText: '', isPublic: false, 
+                    targetLLM: 'Gemini 2.6 Pro', selectedTags: {}
+                },
+                aiAssist: {
+                    context: '',
+                    tags: {}
+                },
+                editingUser: {
+                    id: null, firstName: '', lastName: '', email: '', role: 'User', preferredTags: {}
+                },
+                recommendations: [],
+                titleExistsError: false,
+                generatingDraft: false,
+                searchQuery: '',
+
+                // State for Tag Management
+                showAddCategoryModal: false,
+                newCategoryName: '',
+                newCategoryType: 'discovery', // Default, will be set on modal open
+                newTagValueName: '',
+                editingValueId: null,
+                editingValueName: '',
+
+                get filteredPrompts() {
+                    if (!this.searchQuery.trim()) {
+                        return this.prompts;
+                    }
+                    const lowerCaseQuery = this.searchQuery.toLowerCase();
+                    return this.prompts.filter(p => 
+                        p.title.toLowerCase().includes(lowerCaseQuery) ||
+                        p.promptText.toLowerCase().includes(lowerCaseQuery)
+                    );
+                },
+
+                // --- DATA PERSISTENCE FUNCTIONS ---
+                saveState() {
+                    const appData = {
+                        users: this.users,
+                        prompts: this.prompts,
+                        requestTagCategories: this.requestTagCategories,
+                        discoveryTagCategories: this.discoveryTagCategories,
+                        llms: this.llms,
+                    };
+                    localStorage.setItem('sarathiPromptBuilderData', JSON.stringify(appData));
+                    console.log("Application state saved.");
+                },
+
+                loadState() {
+                    const savedData = localStorage.getItem('sarathiPromptBuilderData');
+                    if (savedData) {
+                        try {
+                            const appData = JSON.parse(savedData);
+                            this.users = appData.users || [];
+                            this.prompts = appData.prompts || [];
+                            this.requestTagCategories = appData.requestTagCategories || [];
+                            this.discoveryTagCategories = appData.discoveryTagCategories || [];
+                            this.llms = appData.llms || [];
+                            // Re-establish current user from loaded data
+                            this.currentUser = this.users.find(u => u.role === 'Admin') || this.users[0];
+                            console.log("Application state loaded from localStorage.");
+                            return true;
+                        } catch(e) {
+                            console.error("Could not parse saved data, starting fresh.", e);
+                            return false;
+                        }
+                    }
+                    return false;
+                },
+
+                init() {
+                    if (!this.loadState()) {
+                        this.generateMockData();
+                        this.saveState(); // Save the initial mock data if none exists
+                    }
+                    
+                    // Watch for changes in major data structures and save them automatically.
+                    this.$watch('requestTagCategories', () => this.saveState(), { deep: true });
+                    this.$watch('discoveryTagCategories', () => this.saveState(), { deep: true });
+                    this.$watch('llms', () => this.saveState(), { deep: true });
+                    this.$watch('users', () => this.saveState(), { deep: true });
+                    this.$watch('prompts', () => this.saveState(), { deep: true });
+
+                    this.$watch('currentUser.firstName', (newVal, oldVal) => {
+                        if (newVal !== oldVal) this.updateUserDisplayName(this.currentUser);
+                    });
+                     this.$watch('currentUser.lastName', (newVal, oldVal) => {
+                        if (newVal !== oldVal) this.updateUserDisplayName(this.currentUser);
+                    });
+
+                     this.$nextTick(() => { lucide.createIcons(); });
+                },
+                
+                generateMockData() {
+                    console.log("Generating initial mock data.");
+                    this.users = [
+                        { id: 1, firstName: 'Hiren', lastName: 'Jivani', displayName: 'Hiren Jivani (Admin)', email: 'hiren.jivani@jeavio.com', role: 'Admin', preferredTags: {'disc-cat1': 'disc-val3'} },
+                        { id: 2, firstName: 'Bob', lastName: 'Smith', displayName: 'Bob Smith', email: 'bob@example.com', role: 'User', preferredTags: {} },
+                        { id: 3, firstName: 'Charlie', lastName: 'Brown', displayName: 'Charlie Brown', email: 'charlie@example.com', role: 'User', preferredTags: {} },
+                    ];
+                    this.currentUser = this.users[0];
+                    
+                    this.llms = [
+                        { name: 'Gemini 2.6 Pro', status: 'Active', fallback: '' },
+                        { name: 'GPT-4 Turbo', status: 'Active', fallback: '' },
+                        { name: 'Claude 3 Opus', status: 'Active', fallback: '' },
+                        { name: 'Gemini 2.5 Pro', status: 'Discontinued', fallback: 'Gemini 2.6 Pro' },
+                    ];
+
+                    this.requestTagCategories = [
+                        {
+                            id: 'req-cat1', name: 'Project', active: true, mandatory: true,
+                            values: [ { id: 'req-val1', name: 'Phoenix' }, { id: 'req-val2', name: 'Titan' }, {id: 'req-val3', name: 'Odyssey'} ]
+                        },
+                        {
+                            id: 'req-cat2', name: 'Persona', active: true, mandatory: false,
+                            values: [ { id: 'req-val4', name: 'Team Lead' }, { id: 'req-val5', name: 'Product Owner' }, { id: 'req-val6', name: 'QA Engineer'} ]
+                        },
+                        {
+                            id: 'req-cat3', name: 'Desired Output', active: true, mandatory: true,
+                            values: [ { id: 'req-val7', name: 'JSON' }, { id: 'req-val8', name: 'Markdown' }, { id: 'req-val9', name: 'Plain Text'} ]
+                        }
+                    ];
+
+                    this.discoveryTagCategories = [
+                        {
+                            id: 'disc-cat1', name: 'Department', active: true, mandatory: true,
+                            values: [ { id: 'disc-val1', name: 'QA' }, { id: 'disc-val2', name: 'Product' }, { id: 'disc-val3', name: 'Engineering' } ]
+                        },
+                        {
+                            id: 'disc-cat2', name: 'Usecase', active: true, mandatory: false,
+                            values: [ { id: 'disc-val4', name: 'Summarization' }, { id: 'disc-val5', name: 'Code Gen' } ]
+                        }
+                    ];
+
+                    this.prompts = [
+                        { 
+                            id: 101, title: 'Summarize Meeting Notes', 
+                            promptText: 'Please summarize the key decisions and action items from the following meeting transcript. Format the output as a markdown list.', 
+                            ownerId: 1, isPublic: true, targetLLM: 'Gemini 2.6 Pro', discoveryTags: ['disc-val2', 'disc-val4'],
+                            versionHistory: [
+                                { versionNumber: 1, promptText: 'Summarize the following meeting transcript.', note: 'Initial version.', authorId: 1, timestamp: '2023-10-26T10:00:00Z' },
+                                { versionNumber: 2, promptText: 'Please summarize the key decisions and action items from the following meeting transcript. Format the output as a markdown list.', note: 'Added formatting instruction.', authorId: 2, timestamp: '2023-10-27T14:30:00Z' }
+                            ],
+                            upvotes: 25, downvotes: 1, usageCount: 150, status: 'ACTIVE', 
+                            createdAt: '2023-10-26T10:00:00Z', updatedAt: '2023-10-27T14:30:00Z', lastUpdatedBy: 2
+                        },
+                        { 
+                            id: 102, title: 'Generate Python Boilerplate', 
+                            promptText: 'Create a Python script for a basic Flask API with a single GET endpoint at "/". Include error handling for a 404.', 
+                            ownerId: 2, isPublic: true, targetLLM: 'GPT-4 Turbo', discoveryTags: ['disc-val3', 'disc-val5'],
+                            versionHistory: [{ versionNumber: 1, promptText: 'Create a Python script for a basic Flask API with a single GET endpoint at "/". Include error handling for a 404.', note: 'Initial creation', authorId: 2, timestamp: '2023-11-01T11:00:00Z' }],
+                            upvotes: 42, downvotes: 0, usageCount: 210, status: 'ACTIVE', 
+                            createdAt: '2023-11-01T11:00:00Z', updatedAt: '2023-11-01T11:00:00Z', lastUpdatedBy: 2
+                        },
+                    ];
+                },
+
+                setActiveView(view) {
+                    this.activeView = view;
+                    this.resetStateForView(view);
+                    this.$nextTick(() => { lucide.createIcons(); });
+                },
+                
+                resetStateForView(view) {
+                    if (view !== 'detail') this.selectedPrompt = null;
+                    if (view !== 'create-edit') this.resetEditingPrompt();
+                    if (view !== 'create-edit-user') this.resetEditingUser();
+                    if (view !== 'admin') {
+                        this.selectedTagCategory = null;
+                        this.selectedCategoryType = null;
+                    }
+                    if (view !== 'people') this.peopleTab = 'profile';
+                    this.titleExistsError = false;
+                },
+
+                findUser(userId) {
+                    return this.users.find(u => u.id === userId) || { displayName: 'Unknown User' };
+                },
+
+                getRecommendations(query) {
+                    if (query.length < 3) {
+                        this.recommendations = [];
+                        return;
+                    }
+                    this.recommendations = this.prompts.filter(p =>
+                        p.isPublic && (p.title.toLowerCase().includes(query.toLowerCase()) || p.promptText.toLowerCase().includes(query.toLowerCase()))
+                    ).slice(0, 3);
+                },
+
+                selectRecommendationForChat(rec) {
+                    this.currentPrompt = rec.promptText;
+                    this.recommendations = [];
+                },
+                
+                async sendPrompt() {
+                    if (!this.currentPrompt.trim() || this.isAiTyping) return;
+
+                    this.chatHistory.push({ role: 'user', html: `<p>${this.currentPrompt}</p>` });
+                    const userPrompt = this.currentPrompt;
+                    this.currentPrompt = '';
+                    this.recommendations = [];
+                    this.isAiTyping = true;
+                    this.scrollToBottom();
+
+                    if (!apiKey) {
+                        this.isAiTyping = false;
+                        this.chatHistory.push({ role: 'ai', html: '<p class="text-red-600"><strong>API Key Missing:</strong> Please add your Gemini API key in the HTML file to enable AI responses.</p>', feedback: null });
+                        this.scrollToBottom();
+                        return;
+                    }
+
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    const payload = {
+                        contents: [{ parts: [{ text: userPrompt }] }],
+                        systemInstruction: { parts: [{ text: "You are Sarathi, a helpful and friendly assistant." }] },
+                    };
+
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(`API error (${response.status}): ${errorData.error.message}`);
+                        }
+                        const result = await response.json();
+                        const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (generatedText) {
+                            const formattedHtml = this.simpleMarkdownToHtml(generatedText);
+                            this.chatHistory.push({ role: 'ai', html: formattedHtml, feedback: null });
+                        } else {
+                            throw new Error("Received an empty response from the API.");
+                        }
+                    } catch (error) {
+                        console.error("Error calling Gemini API:", error);
+                        this.chatHistory.push({ role: 'ai', html: `<p class="text-red-600"><strong>Error:</strong> ${error.message}</p>`, feedback: null });
+                    } finally {
+                        this.isAiTyping = false;
+                        this.scrollToBottom();
+                    }
+                },
+                
+                rateMessage(index, rating) {
+                    const message = this.chatHistory[index];
+                    message.feedback = (message.feedback === rating) ? null : rating;
+                },
+
+                simpleMarkdownToHtml(text) {
+                    let html = text
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>')       
+                        .replace(/\n/g, '<br>');                    
+                    return `<p>${html}</p>`;
+                },
+                
+                savePromptFromHistory(message) {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = message.html;
+                    const promptText = tempDiv.textContent || tempDiv.innerText || "";
+                    this.resetEditingPrompt();
+                    this.editingPrompt.promptText = promptText.trim();
+                    this.setActiveView('create-edit');
+                },
+
+                startNewPromptCreation() {
+                    this.resetEditingPrompt();
+                    this.setActiveView('create-edit');
+                },
+
+                startNewPromptCreationFromChat() {
+                    if (!this.currentPrompt.trim()) {
+                        alert('Please enter a prompt in the chat box before saving.');
+                        return;
+                    }
+                    this.resetEditingPrompt();
+                    this.editingPrompt.promptText = this.currentPrompt;
+                    this.setActiveView('create-edit');
+                },
+                
+                scrollToBottom() {
+                    this.$nextTick(() => {
+                        const chatContainer = document.getElementById('chat-container');
+                        if(chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                        lucide.createIcons();
+                    });
+                },
+
+                async generateAIDraft() {
+                    if (!apiKey) {
+                        alert("API Key is missing. Please add your Gemini API key in the HTML file.");
+                        return;
+                    }
+                    this.generatingDraft = true;
+                    
+                    let systemPrompt = "You are an expert prompt engineer. Based on the following context and tags, generate a clear, concise, and effective prompt for a large language model. The output should be only the prompt text itself, without any introductory phrases like 'Here is the prompt:'.";
+                    let userQuery = `Context/Use Case: ${this.aiAssist.context}\n\nTags:\n`;
+                    for (const [key, value] of Object.entries(this.aiAssist.tags)) {
+                        if (value) {
+                             const category = this.requestTagCategories.find(c => c.id === key);
+                             if (category) userQuery += `- ${category.name}: ${value}\n`;
+                        }
+                    }
+
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    const payload = {
+                        contents: [{ parts: [{ text: userQuery }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                    };
+
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+                        const result = await response.json();
+                        const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (generatedText) {
+                            this.editingPrompt.promptText = generatedText.trim();
+                        } else {
+                            throw new Error("Received an empty response from the API.");
+                        }
+                    } catch (error) {
+                        console.error("Error generating AI draft:", error);
+                        alert(`Failed to generate draft. Error: ${error.message}`);
+                    } finally {
+                        this.generatingDraft = false;
+                    }
+                },
+
+                savePrompt() {
+                    this.titleExistsError = this.prompts.some(p => p.title.toLowerCase() === this.editingPrompt.title.toLowerCase() && p.id !== this.editingPrompt.id);
+                    if (this.titleExistsError) return;
+
+                    const mandatoryCategories = this.discoveryTagCategories.filter(c => c.active && c.mandatory);
+                    const missingSelections = mandatoryCategories.filter(category => !this.editingPrompt.selectedTags[category.id]);
+                    
+                    if (!this.editingPrompt.title.trim() || !this.editingPrompt.promptText.trim() || missingSelections.length > 0) {
+                        alert(`Please fill out all mandatory fields. Missing: ${missingSelections.map(c => c.name).join(', ')}`);
+                        return;
+                    }
+                    
+                    const finalPromptData = {
+                        ...JSON.parse(JSON.stringify(this.editingPrompt)),
+                        discoveryTags: Object.values(this.editingPrompt.selectedTags).filter(Boolean),
+                        updatedAt: new Date().toISOString()
+                    };
+                    delete finalPromptData.selectedTags;
+
+                    if (finalPromptData.id) { // Editing existing prompt
+                        const index = this.prompts.findIndex(p => p.id === finalPromptData.id);
+                        if (index !== -1) this.prompts[index] = finalPromptData;
+                    } else { // Creating new prompt
+                        finalPromptData.id = Date.now();
+                        finalPromptData.ownerId = this.currentUser.id;
+                        finalPromptData.createdAt = new Date().toISOString();
+                        finalPromptData.upvotes = 0;
+                        finalPromptData.downvotes = 0;
+                        finalPromptData.usageCount = 0;
+                        finalPromptData.status = 'ACTIVE';
+                        finalPromptData.versionHistory = [{
+                            versionNumber: 1, promptText: finalPromptData.promptText, note: 'Initial creation', authorId: this.currentUser.id, timestamp: new Date().toISOString()
+                        }];
+                        this.prompts.push(finalPromptData);
+                    }
+                    
+                    this.setActiveView('library');
+                },
+
+                viewPromptDetail(prompt) {
+                    this.selectedPrompt = prompt;
+                    this.setActiveView('detail');
+                },
+                
+                usePromptFromLibrary(prompt) {
+                    this.currentPrompt = prompt.promptText;
+                    this.setActiveView('home');
+                },
+
+                editPrompt(prompt) {
+                    const promptCopy = JSON.parse(JSON.stringify(prompt));
+                    const newSelectedTags = {};
+                    this.discoveryTagCategories.forEach(category => {
+                        const selectedValue = category.values.find(val => promptCopy.discoveryTags.includes(val.id));
+                        newSelectedTags[category.id] = selectedValue ? selectedValue.id : '';
+                    });
+                    
+                    promptCopy.selectedTags = newSelectedTags;
+                    delete promptCopy.discoveryTags;
+                    
+                    this.editingPrompt = promptCopy;
+                    this.setActiveView('create-edit');
+                },
+                
+                resetEditingPrompt() {
+                    this.editingPrompt = {
+                        id: null, title: '', promptText: '', isPublic: false,
+                        targetLLM: this.llms.find(l => l.status === 'Active')?.name || '', 
+                        selectedTags: {}
+                    };
+                    this.aiAssist = { context: '', tags: {} };
+                },
+
+                // --- User Management ---
+                updateUserDisplayName(user) {
+                    user.displayName = `${user.firstName} ${user.lastName}${user.role === 'Admin' ? ' (Admin)' : ''}`;
+                },
+                startNewUserCreation() {
+                    this.resetEditingUser();
+                    this.setActiveView('create-edit-user');
+                },
+                editUser(user) {
+                    this.editingUser = JSON.parse(JSON.stringify(user));
+                    this.setActiveView('create-edit-user');
+                },
+                saveUser() {
+                    if (!this.editingUser.firstName || !this.editingUser.lastName || !this.editingUser.email) {
+                        alert('Please fill in all user details.');
+                        return;
+                    }
+                    this.updateUserDisplayName(this.editingUser);
+
+                    if (this.editingUser.id) { // Update existing
+                        const index = this.users.findIndex(u => u.id === this.editingUser.id);
+                        if (index !== -1) {
+                            this.users[index] = this.editingUser;
+                            // Update current user if they are editing their own profile
+                            if (this.currentUser.id === this.editingUser.id) {
+                                this.currentUser = this.editingUser;
+                            }
+                        }
+                    } else { // Add new
+                        this.editingUser.id = Date.now();
+                        this.users.push(this.editingUser);
+                    }
+
+                    this.setActiveView('people');
+                    this.peopleTab = 'users';
+                },
+                resetEditingUser() {
+                    this.editingUser = {
+                        id: null, firstName: '', lastName: '', email: '', role: 'User', preferredTags: {}
+                    };
+                },
+
+                // --- Tag Management Functions (watchers handle saving) ---
+                selectTagCategory(category, type) {
+                    this.selectedTagCategory = category;
+                    this.selectedCategoryType = type;
+                    this.cancelEditValue();
+                },
+                openAddCategoryModal(type) {
+                    this.newCategoryName = '';
+                    this.newCategoryType = type;
+                    this.showAddCategoryModal = true;
+                },
+                addCategory() {
+                    if (this.newCategoryName.trim() === '') return alert('Category name cannot be empty.');
+                    const newCat = {
+                        id: 'cat' + Date.now(),
+                        name: this.newCategoryName,
+                        active: true, mandatory: false, values: []
+                    };
+                    if (this.newCategoryType === 'request') {
+                        this.requestTagCategories.push(newCat);
+                    } else {
+                        this.discoveryTagCategories.push(newCat);
+                    }
+                    this.showAddCategoryModal = false;
+                },
+                addTagValue() {
+                    if (!this.selectedTagCategory || this.newTagValueName.trim() === '') return alert('Value name cannot be empty.');
+                    this.selectedTagCategory.values.push({
+                        id: 'val' + Date.now(), name: this.newTagValueName,
+                    });
+                    this.newTagValueName = '';
+                },
+                deleteValue(valueId) {
+                    if (!this.selectedTagCategory || !confirm('Are you sure?')) return;
+                    this.selectedTagCategory.values = this.selectedTagCategory.values.filter(v => v.id !== valueId);
+                },
+                startEditValue(value) {
+                    this.editingValueId = value.id;
+                    this.editingValueName = value.name;
+                    this.$nextTick(() => { lucide.createIcons(); });
+                },
+                saveEditValue(value) {
+                    if (this.editingValueName.trim() === '') return alert('Value name cannot be empty.');
+                    value.name = this.editingValueName;
+                    this.cancelEditValue();
+                },
+                cancelEditValue() {
+                    this.editingValueId = null;
+                    this.editingValueName = '';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+
