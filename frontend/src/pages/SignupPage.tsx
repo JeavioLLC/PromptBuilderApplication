@@ -1,12 +1,15 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, Mail, Lock, Eye, EyeOff, Shield } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import Button from '../components/ui/Button'
+import '../styles/login.css'
+
 
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const { signup, loading } = useAuth()
   const navigate = useNavigate()
@@ -18,6 +21,10 @@ const SignupPage: React.FC = () => {
       setError('Please fill in all fields')
       return
     }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
     const success = await signup(email, password, password)
     if (success) {
       navigate('/dashboard')
@@ -27,61 +34,27 @@ const SignupPage: React.FC = () => {
   }
 
   return (
-    <div 
-      className="h-screen flex items-center justify-center px-4 relative" 
-      style={{ background: 'var(--gradient-secondary)' }}
-    >
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-                       radial-gradient(circle at 80% 70%, rgba(16, 185, 129, 0.08) 0%, transparent 50%)`
-        }}
-      />
-      <div 
-        className="w-full max-w-md relative card card--padding-lg"
-        style={{
-          borderRadius: 'var(--radius-xl)',
-          boxShadow: 'var(--shadow-xl)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid var(--border)'
-        }}
-      >
-        {/* Enhanced Header */}
-        <div className="text-center mb-8">
-          <div 
-            className="mx-auto mb-6 flex items-center justify-center"
-            style={{
-              width: '80px',
-              height: '80px',
-              background: 'var(--gradient-accent)',
-              borderRadius: 'var(--radius-xl)',
-              border: '1px solid var(--border-light)',
-              boxShadow: 'var(--shadow-md)'
-            }}
-          >
-            <UserPlus size={32} style={{ color: 'var(--primary)' }} />
+    <div className="login-container">
+      <div className="login-card">
+        {/* Header */}
+        <div className="login-header">
+          <div className="login-icon">
+            <UserPlus size={28} />
           </div>
-          <h1 className="m-0 mb-3" style={{ fontSize: '32px', fontWeight: '700', color: 'var(--text-primary)' }}>
-            Create Account
-          </h1>
-          <p className="m-0" style={{ fontSize: '16px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-            Join us today and start your journey with our platform
-          </p>
+          <h1 className="login-title">Create Account</h1>
+          <p className="login-subtitle">Join us today and start your journey with our platform</p>
         </div>
 
-        {/* Enhanced Error Message */}
+        {/* Error Message */}
         {error && (
-          <div className="mb-6" style={{ 
-            background: 'var(--error-light)', 
+          <div className="login-error" style={{
+            background: 'var(--error-light)',
             color: 'var(--error)',
-            padding: '16px 20px',
-            fontSize: '14px',
-            borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--error)',
+            borderRadius: 'var(--radius-lg)',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
           }}>
             <Shield size={16} />
             {error}
@@ -89,10 +62,10 @@ const SignupPage: React.FC = () => {
         )}
 
         {/* Signup Form */}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label" htmlFor="email">
-              Email Address
+        <form className="login-form" onSubmit={handleSubmit}>
+          <div className="login-form-group">
+            <label className="login-label" htmlFor="email">
+              <Mail size={16} style={{ marginRight: 6, opacity: 0.7 }} /> Email Address
             </label>
             <input
               id="email"
@@ -102,28 +75,44 @@ const SignupPage: React.FC = () => {
               className="form-input"
               placeholder="Enter your email"
               disabled={loading}
+              autoComplete="email"
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="password">
-              Password
+          <div className="login-form-group">
+            <label className="login-label" htmlFor="password">
+              <Lock size={16} style={{ marginRight: 6, opacity: 0.7 }} /> Password
             </label>
-            <div className="relative">
+            <div style={{ position: 'relative' }}>
               <input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="form-input"
                 placeholder="Create a password"
                 disabled={loading}
-                style={{ paddingRight: '48px' }}
+                autoComplete="new-password"
+                style={{ paddingRight: 44 }}
               />
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                onClick={() => setShowPassword((v) => !v)}
+                disabled={loading}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+              Password must be at least 6 characters
             </div>
           </div>
 
-          <div className="mt-8">
+          <div style={{ marginTop: 32 }}>
             <Button
               type="submit"
               variant="primary"
@@ -137,31 +126,27 @@ const SignupPage: React.FC = () => {
                 boxShadow: 'var(--shadow-lg)',
                 fontSize: '16px',
                 fontWeight: '600',
-                padding: '18px 28px'
+                padding: '18px 28px',
               }}
             >
-              {loading ? (
-                'Creating Account...'
-              ) : (
-                'Create Account'
-              )}
+              {loading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </div>
         </form>
 
-        {/* Enhanced Footer */}
+        {/* Footer */}
         <div className="text-center mt-8 pt-6 border-t" style={{ borderColor: 'var(--border-light)' }}>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             Already have an account?{' '}
-            <Link 
-              to="/login" 
+            <Link
+              to="/login"
               className="font-semibold transition-colors"
               style={{
                 background: 'var(--gradient-primary)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-                textDecoration: 'none'
+                textDecoration: 'none',
               }}
             >
               Sign in here

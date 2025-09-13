@@ -1,3 +1,6 @@
+import PromptGenPage from './pages/PromptGenPage';
+  {/* Gemini Prompt Generator Test Page (public for now) */}
+  <Route path="/promptgen" element={<PromptGenPage />} />
 import React from 'react';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
