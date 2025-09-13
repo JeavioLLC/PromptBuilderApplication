@@ -7,6 +7,8 @@ This script provides an easy way to run the Prompt Builder application.
 import os
 import sys
 from app import create_app
+PORT = int(os.getenv('PORT', '5000'))
+HOST = os.getenv('HOST', '0.0.0.0')
 
 def main():
     """Main function to run the application."""
@@ -37,13 +39,13 @@ def main():
     print("• Health Check: /health")
     
     print("\n🌐 Starting server...")
-    print("📍 Application URL: http://localhost:5000")
-    print("🔧 API Base URL: http://localhost:5000/api")
+    print(f"📍 Application URL: http://localhost:{PORT}")
+    print(f"🔧 API Base URL: http://localhost:{PORT}/api")
     print("\n💡 Press Ctrl+C to stop the server")
     print("=" * 60)
     
     try:
-        app.run(debug=True, host='0.0.0.0', port=5000)
+        app.run(debug=True, host=HOST, port=PORT)
     except KeyboardInterrupt:
         print("\n\n👋 Server stopped. Goodbye!")
     except Exception as e:

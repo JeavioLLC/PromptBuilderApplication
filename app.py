@@ -37,14 +37,11 @@ def create_app(config_name=None):
         """Health check endpoint"""
         return {'status': 'healthy', 'message': 'Prompt Builder API is running'}
     
-    # Database initialization
-    @app.before_first_request
-    def create_tables():
-        """Create database tables and default data"""
-        with app.app_context():
-            db.create_all()
-            # Create default category if none exists
-            CategoryModel.get_or_create_default()
+    # Database initialization (Flask 2.3+ removed before_first_request)
+    with app.app_context():
+        db.create_all()
+        # Create default category if none exists
+        CategoryModel.get_or_create_default()
     
     return app
 

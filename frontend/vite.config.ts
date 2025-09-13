@@ -1,23 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
-import styleImport from 'vite-plugin-style-import'
+// Removed style-import plugin due to dependency issue; using global reset.css instead
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    styleImport({
-      resolves: [
-        {
-          libraryName: 'antd',
-          libraryNameChangeCase: 'pascalCase',
-          resolveStyle: (name) => {
-            return `antd/es/${name}/style/index`
-          },
-        },
-      ],
-    }),
   ],
   resolve: {
     alias: {

@@ -32,7 +32,8 @@ class DatabaseConfig:
 class DevelopmentConfig(DatabaseConfig):
     """Development configuration"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = DatabaseConfig.get_database_uri()
+    # Allow overriding via env for local dev (e.g. SQLite)
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', DatabaseConfig.get_database_uri())
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 
