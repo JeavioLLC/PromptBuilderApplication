@@ -1,31 +1,41 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { Home, Library, FolderOpen } from 'lucide-react'
-import { SidebarProps, NavItem } from '../../types/navigation'
+import { Link, useLocation } from 'react-router-dom'
+import { LayoutDashboard, Settings, HelpCircle, LogOut, User } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+
+interface NavItem {
+  path: string
+  label: string
+  icon: any
+}
 
 const navItems: NavItem[] = [
-  { path: '/', label: 'Chat Assistant', icon: Home },
-  { path: '/prompts', label: 'Prompt Library', icon: Library },
-  { path: '/categories', label: 'Categories', icon: FolderOpen },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/settings', label: 'Settings', icon: Settings },
+  { path: '/help', label: 'Help', icon: HelpCircle },
 ]
 
-const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
+const Sidebar: React.FC = () => {
+  const location = useLocation()
+  const { user, logout } = useAuth()
+
   const isActive = (path: string) => {
-    if (path === '/') {
-      return currentPath === '/'
-    }
-    return currentPath.startsWith(path)
+    return location.pathname === path || location.pathname.startsWith(path + '/')
+  }
+
+  const handleLogout = () => {
+    logout()
   }
 
   return (
     <aside style={{
       width: '260px',
       flexShrink: 0,
-      background: 'var(--shuttle-bg-card)',
-      borderRight: '1px solid var(--shuttle-border)',
+      background: 'var(--bg-main)',
+      borderRight: '1px solid var(--border)',
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: 'var(--shuttle-shadow-sm)',
+      boxShadow: 'var(--shadow)',
       position: 'relative'
     }}>
       {/* Clean Header */}
@@ -34,29 +44,29 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        borderBottom: '1px solid var(--shuttle-border-light)',
-        background: 'var(--shuttle-bg-card)',
+        borderBottom: '1px solid var(--border-light)',
+        background: 'var(--bg-card)',
         padding: '0 24px'
       }}>
         <div style={{ textAlign: 'center' }}>
           <h1 style={{
             fontSize: '20px',
             fontWeight: '600',
-            color: 'var(--shuttle-text-primary)',
+            color: 'var(--text-primary)',
             margin: '0',
             letterSpacing: '-0.01em'
           }}>
-            Prompt Builder
+            Dashboard
           </h1>
           <p style={{
             fontSize: '11px',
-            color: 'var(--shuttle-text-muted)',
+            color: 'var(--text-muted)',
             margin: '2px 0 0 0',
             fontWeight: '400',
             textTransform: 'uppercase',
             letterSpacing: '0.5px'
           }}>
-            AI Assistant
+            Admin Panel
           </p>
         </div>
       </div>
@@ -72,7 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
         <div style={{
           fontSize: '11px',
           fontWeight: '500',
-          color: 'var(--shuttle-text-muted)',
+          color: 'var(--text-muted)',
           textTransform: 'uppercase',
           letterSpacing: '0.8px',
           marginBottom: '12px',
@@ -93,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
                 display: 'flex',
                 alignItems: 'center',
                 padding: '12px 16px',
-                borderRadius: 'var(--shuttle-radius)',
+                borderRadius: 'var(--radius)',
                 fontWeight: '500',
                 fontSize: '14px',
                 textDecoration: 'none',
@@ -101,24 +111,24 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
                 position: 'relative',
                 margin: '2px 0',
                 ...(active ? {
-                  background: 'var(--shuttle-primary)',
-                  color: 'var(--shuttle-text-on-primary)',
-                  boxShadow: 'var(--shuttle-shadow-sm)'
+                  background: 'var(--primary)',
+                  color: 'var(--text-on-primary)',
+                  boxShadow: 'var(--shadow-sm)'
                 } : {
-                  color: 'var(--shuttle-text-secondary)',
+                  color: 'var(--text-secondary)',
                   background: 'transparent'
                 })
               }}
               onMouseEnter={(e) => {
                 if (!active) {
-                  e.currentTarget.style.background = 'var(--shuttle-bg-hover)'
-                  e.currentTarget.style.color = 'var(--shuttle-text-primary)'
+                  e.currentTarget.style.background = 'var(--bg-hover)'
+                  e.currentTarget.style.color = 'var(--text-primary)'
                 }
               }}
               onMouseLeave={(e) => {
                 if (!active) {
                   e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'var(--shuttle-text-secondary)'
+                  e.currentTarget.style.color = 'var(--text-secondary)'
                 }
               }}
             >
@@ -130,7 +140,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
                   transform: 'translateY(-50%)',
                   width: '3px',
                   height: '20px',
-                  background: 'var(--shuttle-text-on-primary)',
+                  background: 'var(--text-on-primary)',
                   borderRadius: '0 2px 2px 0'
                 }} />
               )}
@@ -141,80 +151,90 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPath, userProfile }) => {
         })}
       </nav>
 
-      {/* Clean User Profile */}
+      {/* User Profile & Logout */}
       <div style={{
         padding: '16px',
-        borderTop: '1px solid var(--shuttle-border-light)',
-        background: 'var(--shuttle-bg-secondary)'
+        borderTop: '1px solid var(--border-light)',
+        background: 'var(--bg-secondary)'
       }}>
+        {/* User Info */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
           padding: '12px',
-          background: 'var(--shuttle-bg-card)',
-          borderRadius: 'var(--shuttle-radius)',
-          border: '1px solid var(--shuttle-border-light)',
-          boxShadow: 'var(--shuttle-shadow-sm)'
+          background: 'var(--bg-card)',
+          borderRadius: 'var(--radius)',
+          border: '1px solid var(--border-light)',
+          boxShadow: 'var(--shadow-sm)',
+          marginBottom: '12px'
         }}>
-          <div style={{ position: 'relative' }}>
-            <img 
-              style={{
-                height: '36px',
-                width: '36px',
-                borderRadius: 'var(--shuttle-radius-sm)',
-                objectFit: 'cover',
-                border: '2px solid var(--shuttle-border)',
-                background: 'var(--shuttle-bg-secondary)'
-              }}
-              src={userProfile.avatar || "https://placehold.co/100x100/4a90a4/FFFFFF?text=AU"} 
-              alt="User avatar" 
-            />
-            {userProfile.isOnline && (
-              <div style={{
-                position: 'absolute',
-                bottom: '-1px',
-                right: '-1px',
-                height: '10px',
-                width: '10px',
-                background: 'var(--shuttle-success)',
-                borderRadius: '50%',
-                border: '2px solid var(--shuttle-bg-card)'
-              }} />
-            )}
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: 'var(--radius-sm)',
+            background: 'var(--primary-light)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '2px solid var(--border)'
+          }}>
+            <User size={18} style={{ color: 'var(--primary)' }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{
               fontSize: '13px',
               fontWeight: '500',
-              color: 'var(--shuttle-text-primary)',
+              color: 'var(--text-primary)',
               margin: '0 0 1px 0',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap'
             }}>
-              {userProfile.name}
+              {user?.name || 'User'}
             </p>
             <p style={{
               fontSize: '11px',
-              color: 'var(--shuttle-text-muted)',
+              color: 'var(--text-muted)',
               margin: '0',
-              display: 'flex',
-              alignItems: 'center'
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
             }}>
-              {userProfile.isOnline && (
-                <span style={{
-                  width: '6px',
-                  height: '6px',
-                  background: 'var(--shuttle-success)',
-                  borderRadius: '50%',
-                  marginRight: '6px'
-                }} />
-              )}
-              {userProfile.role}
+              {user?.email}
             </p>
           </div>
         </div>
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '12px 16px',
+            borderRadius: 'var(--radius)',
+            fontWeight: '500',
+            fontSize: '14px',
+            border: 'none',
+            background: 'transparent',
+            color: 'var(--text-secondary)',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--error)'
+            e.currentTarget.style.color = 'var(--text-on-primary)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = 'var(--text-secondary)'
+          }}
+        >
+          <LogOut size={18} style={{ marginRight: '12px' }} />
+          <span>Sign Out</span>
+        </button>
       </div>
     </aside>
   )

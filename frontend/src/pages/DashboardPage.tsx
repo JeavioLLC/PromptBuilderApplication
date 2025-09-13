@@ -1,139 +1,161 @@
-import { useQuery } from '@tanstack/react-query'
-import { fetchStats } from '@/api/stats'
-import type { Prompt, StatsResponse } from '@/api/types'
-import { Eye, TrendingUp, FolderOpen } from 'lucide-react'
+import React from 'react'
+import { BarChart3, Users, FileText, TrendingUp, Activity } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+import Card from '../components/ui/Card'
+import PageLayout from '../components/layout/PageLayout'
+import PageHeader from '../components/layout/PageHeader'
 
-export default function DashboardPage() {
-  const { data, isLoading, error } = useQuery<StatsResponse>({ 
-    queryKey: ['stats'], 
-    queryFn: fetchStats 
-  })
+const DashboardPage: React.FC = () => {
+  const { user } = useAuth()
 
-  if (error) {
-    return (
-      <div className="text-red-600 bg-red-50 p-4 rounded-lg">
-        Error loading dashboard: {String(error)}
-      </div>
-    )
-  }
+  const stats = [
+    {
+      title: 'Total Users',
+      value: '1,234',
+      change: '+12%',
+      trend: 'up',
+      icon: Users,
+      color: 'var(--primary)'
+    },
+    {
+      title: 'Active Sessions',
+      value: '89',
+      change: '+5%',
+      trend: 'up',
+      icon: Activity,
+      color: 'var(--success)'
+    },
+    {
+      title: 'Documents',
+      value: '456',
+      change: '-2%',
+      trend: 'down',
+      icon: FileText,
+      color: 'var(--warning)'
+    },
+    {
+      title: 'Growth Rate',
+      value: '23.5%',
+      change: '+8%',
+      trend: 'up',
+      icon: TrendingUp,
+      color: 'var(--info)'
+    }
+  ]
+
+  const recentActivity = [
+    { id: 1, action: 'User registration', user: 'john@example.com', time: '2 minutes ago' },
+    { id: 2, action: 'Document uploaded', user: 'sarah@example.com', time: '5 minutes ago' },
+    { id: 3, action: 'Profile updated', user: 'mike@example.com', time: '10 minutes ago' },
+    { id: 4, action: 'New session started', user: 'emma@example.com', time: '15 minutes ago' },
+    { id: 5, action: 'Password changed', user: 'alex@example.com', time: '20 minutes ago' }
+  ]
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-8">
-      <h2 className="text-3xl font-semibold text-gray-800 mb-6">Dashboard</h2>
-      
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <FolderOpen className="h-8 w-8 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Categories</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {isLoading ? '...' : data?.overview.total_categories || 0}
-              </p>
-            </div>
-          </div>
-        </div>
+    <PageLayout>
+      <PageHeader
+        icon={<BarChart3 size={20} style={{ color: 'var(--primary)' }} />}
+        title={`Welcome back, ${user?.name || 'User'}!`}
+        subtitle="Here's what's happening with your application today"
+      />
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <TrendingUp className="h-8 w-8 text-green-600" />
+      {/* Stats Grid */}
+      <div className="grid-auto-fit mb-8">
+        {stats.map((stat, index) => (
+          <Card key={index} padding="md" hoverable>
+            <div className="flex items-center justify-between mb-4">
+              <div className="page-icon" style={{ background: `${stat.color}15`, borderColor: `${stat.color}30` }}>
+                <stat.icon size={20} style={{ color: stat.color }} />
+              </div>
+              <div className={`text-sm font-medium ${stat.trend === 'up' ? 'text-success' : 'text-error'}`}>
+                {stat.change}
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Prompts</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {isLoading ? '...' : data?.overview.total_prompts || 0}
-              </p>
+            <div>
+              <h3 className="text-2xl font-semibold text-primary mb-1">{stat.value}</h3>
+              <p className="text-sm text-secondary">{stat.title}</p>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <Eye className="h-8 w-8 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Usage</p>
-              <p className="text-2xl font-semibold text-gray-900">
-                {isLoading ? '...' : data?.overview.total_usage || 0}
-              </p>
-            </div>
-          </div>
-        </div>
+          </Card>
+        ))}
       </div>
 
-      {/* Most Used Prompts */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">Most Used Prompts</h3>
-        </div>
-        <div className="p-6">
-          {isLoading ? (
-            <div className="animate-pulse space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-4 bg-gray-200 rounded"></div>
-              ))}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Chart Placeholder */}
+        <Card padding="md">
+          <div className="card-header">
+            <h3 className="card-title">Analytics Overview</h3>
+            <p className="card-subtitle">Last 30 days performance</p>
+          </div>
+          
+          <div className="flex items-center justify-center h-64 bg-secondary rounded-lg">
+            <div className="text-center">
+              <BarChart3 size={48} style={{ color: 'var(--text-muted)', margin: '0 auto 16px' }} />
+              <p className="text-muted">Chart visualization would go here</p>
+              <p className="text-sm text-muted mt-2">Connect your analytics service to see real data</p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {data?.most_used_prompts?.map((prompt: Prompt) => (
-                <div key={prompt.id} className="flex justify-between items-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-                  <div>
-                    <h4 className="font-semibold text-lg text-blue-600">{prompt.title}</h4>
-                    <p className="text-sm text-gray-600">{prompt.category_name}</p>
-                  </div>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span className="flex items-center">
-                      <Eye className="w-4 h-4 mr-1" />
-                      {prompt.usage_count}
-                    </span>
-                  </div>
+          </div>
+        </Card>
+
+        {/* Recent Activity */}
+        <Card padding="md">
+          <div className="card-header">
+            <h3 className="card-title">Recent Activity</h3>
+            <p className="card-subtitle">Latest user actions</p>
+          </div>
+          
+          <div className="space-y-4">
+            {recentActivity.map((activity) => (
+              <div key={activity.id} className="flex items-center gap-4 p-3 bg-secondary rounded-lg">
+                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-primary truncate">
+                    {activity.action}
+                  </p>
+                  <p className="text-xs text-secondary truncate">
+                    {activity.user}
+                  </p>
                 </div>
-              )) || (
-                <p className="text-gray-500 text-center py-8">No prompts found</p>
-              )}
-            </div>
-          )}
-        </div>
+                <div className="text-xs text-muted flex-shrink-0">
+                  {activity.time}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-4 pt-4 border-t text-center">
+            <button className="text-sm font-medium transition-colors" style={{ color: 'var(--primary)' }}>
+              View all activity
+            </button>
+          </div>
+        </Card>
       </div>
 
-      {/* Recent Prompts */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">Recent Prompts</h3>
+      {/* Quick Actions */}
+      <Card padding="md" className="mt-8">
+        <div className="card-header">
+          <h3 className="card-title">Quick Actions</h3>
+          <p className="card-subtitle">Common tasks and shortcuts</p>
         </div>
-        <div className="p-6">
-          {isLoading ? (
-            <div className="animate-pulse space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-4 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {data?.recent_prompts?.map((prompt: Prompt) => (
-                <div key={prompt.id} className="flex justify-between items-center p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-                  <div>
-                    <h4 className="font-semibold text-lg text-blue-600">{prompt.title}</h4>
-                    <p className="text-sm text-gray-600">{prompt.category_name}</p>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {prompt.updated_at ? new Date(prompt.updated_at).toLocaleDateString() : 'N/A'}
-                  </div>
-                </div>
-              )) || (
-                <p className="text-gray-500 text-center py-8">No recent prompts found</p>
-              )}
-            </div>
-          )}
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Add User', icon: Users },
+            { label: 'Upload File', icon: FileText },
+            { label: 'View Reports', icon: BarChart3 },
+            { label: 'Settings', icon: Activity }
+          ].map((action, index) => (
+            <button
+              key={index}
+              className="flex flex-col items-center gap-3 p-4 bg-secondary rounded-lg hover:bg-hover transition-colors cursor-pointer"
+            >
+              <action.icon size={24} style={{ color: 'var(--primary)' }} />
+              <span className="text-sm font-medium text-secondary">{action.label}</span>
+            </button>
+          ))}
         </div>
-      </div>
-    </div>
+      </Card>
+    </PageLayout>
   )
 }
 
-
+export default DashboardPage
