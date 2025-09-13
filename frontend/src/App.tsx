@@ -5,6 +5,9 @@ import AppLayout from './components/layout/AppLayout'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import DashboardPage from './pages/DashboardPage'
+import ChatHome from './pages/ChatHome'
+import PromptLibrary from './pages/PromptLibrary'
+import CreatePrompt from './pages/CreatePrompt'
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -52,6 +55,24 @@ const AppRoutes: React.FC = () => {
           <LoginPage />
         </PublicRoute>
       } />
+
+      {/* Create Prompt Route */}
+      <Route path="/prompts/create" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <CreatePrompt />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Prompt Library Route */}
+      <Route path="/prompts" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <PromptLibrary />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
       <Route path="/signup" element={
         <PublicRoute>
           <SignupPage />
@@ -63,6 +84,15 @@ const AppRoutes: React.FC = () => {
         <ProtectedRoute>
           <AppLayout>
             <DashboardPage />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+
+      {/* Home page (chat UI) */}
+      <Route path="/" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <ChatHome />
           </AppLayout>
         </ProtectedRoute>
       } />
@@ -108,8 +138,7 @@ const AppRoutes: React.FC = () => {
       } />
 
       {/* Default redirect */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+  <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

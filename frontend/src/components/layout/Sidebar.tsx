@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Settings, HelpCircle, LogOut, User } from 'lucide-react'
+import { Home, BookOpen, UserCheck, Shield, LogOut, User } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 interface NavItem {
@@ -10,9 +10,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/settings', label: 'Settings', icon: Settings },
-  { path: '/help', label: 'Help', icon: HelpCircle },
+  { path: '/dashboard', label: 'Home', icon: Home },
+  { path: '/prompts', label: 'Prompt Library', icon: BookOpen },
+  { path: '/contributions', label: 'My Contributions', icon: UserCheck },
+  { path: '/admin', label: 'Admin Panel', icon: Shield },
 ]
 
 const Sidebar: React.FC = () => {
@@ -20,6 +21,9 @@ const Sidebar: React.FC = () => {
   const { user, logout } = useAuth()
 
   const isActive = (path: string) => {
+    if (path === '/dashboard') {
+      return location.pathname === '/' || location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard/')
+    }
     return location.pathname === path || location.pathname.startsWith(path + '/')
   }
 
@@ -36,7 +40,9 @@ const Sidebar: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       boxShadow: 'var(--shadow)',
-      position: 'relative'
+      position: 'relative',
+      minHeight: '100vh',
+      boxSizing: 'border-box'
     }}>
       {/* Clean Header */}
       <div style={{
@@ -56,18 +62,8 @@ const Sidebar: React.FC = () => {
             margin: '0',
             letterSpacing: '-0.01em'
           }}>
-            Dashboard
+            Sarathi
           </h1>
-          <p style={{
-            fontSize: '11px',
-            color: 'var(--text-muted)',
-            margin: '2px 0 0 0',
-            fontWeight: '400',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>
-            Admin Panel
-          </p>
         </div>
       </div>
 
@@ -79,18 +75,6 @@ const Sidebar: React.FC = () => {
         flexDirection: 'column',
         gap: '4px'
       }}>
-        <div style={{
-          fontSize: '11px',
-          fontWeight: '500',
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.8px',
-          marginBottom: '12px',
-          paddingLeft: '12px'
-        }}>
-          Navigation
-        </div>
-        
         {navItems.map((item) => {
           const active = isActive(item.path)
           const IconComponent = item.icon
